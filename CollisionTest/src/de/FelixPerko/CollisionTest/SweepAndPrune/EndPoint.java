@@ -11,4 +11,7 @@ public class EndPoint {
 		this.isMin = isMin;
 	}
 	
+	public float getValue(){
+		return value;
+	}
 }

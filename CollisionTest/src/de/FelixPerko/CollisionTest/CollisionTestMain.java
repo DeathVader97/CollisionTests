@@ -10,9 +10,10 @@ public class CollisionTestMain {
 	
 	public static int totalObjects = 10000;
 	public static double maxSpeed = 500;
-	public static double collisionDistance = 5;
+	public static double collisionDistance = 2;
 	public static Vector2d bounds = new Vector2d(1000, 1000);
 	public static long simulationTime = (long)(10*1000000000l);
+	public static int changesPerSecond = 0;
 	
 	public static ArrayList<TestObject> objects = new ArrayList<>();
 	static ArrayList<CollisionTest> tests = new ArrayList<>();
@@ -22,17 +23,19 @@ public class CollisionTestMain {
 	public static void main(String[] args) {
 		windowManager.init();
 		addTests();
-		for (int i = 1 ; i <= 1 ; i++){
-			totalObjects = 7500*i;
-			initObjects();
-	//		System.out.println("testing for "+totalObjects+" objects");
-//			System.out.print(totalObjects+",");
+		initObjects();
+		for (int i = 1 ; i <= 10 ; i++){
+			totalObjects = 5000;
+			changesPerSecond = i*20;
+			int testNr = 0;
 			for (CollisionTest test : tests){
 				test.init();
 				long timeUsed = loop(test);
-	//			System.out.println("time Used: "+(timeUsed/1000000000.0));
 				test.printData(timeUsed, 1000000000l);
-				System.out.print(",");
+				
+				if (testNr < tests.size()-1)
+					System.out.print(",");
+				testNr++;
 			}
 			System.out.println();
 		}
@@ -69,10 +72,24 @@ public class CollisionTestMain {
 				lastTime = currentTime;
 			}
 			double deltaT = ((double)currentTime-lastTime)/simulationTime;
+			int changes = (int)Math.round(changesPerSecond*((currentTime-lastTime)/1000000000.0));
+			for (int i = 0 ; i < changes ; i++){
+				TestObject removeObject = objects.get((int)(Math.random()*objects.size()));
+				objects.remove(removeObject);
+				test.removeObject(removeObject);
+			}
+			for (int i = 0 ; i < changes ; i++){
+				TestObject newObject = new TestObject(
+						new Vector2d(bounds.x*Math.random(), bounds.y*Math.random()),
+						new Vector2d(maxSpeed*2*(Math.random()-0.5), maxSpeed*2*(Math.random()-0.5)));
+				objects.add(newObject);
+				test.addObject(newObject);
+			}
 			TickHelper.moveObjects(deltaT);
 			test.tick();
 			windowManager.update();
 			lastTime = currentTime;
+//			System.out.println(System.nanoTime()-currentTime);
 		}
 	}
 }

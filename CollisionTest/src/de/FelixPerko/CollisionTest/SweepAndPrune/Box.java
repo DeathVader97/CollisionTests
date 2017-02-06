@@ -10,7 +10,7 @@ public class Box {
 	
 	int id;
 	EndPoint xMin,xMax,yMin,yMax;
-	public HashMap<Integer, Boolean> collisions = new HashMap<>();
+	public HashMap<Integer, Box> collisions = new HashMap<>();
 	public TestObject object;
 	
 	public Box(TestObject object) {

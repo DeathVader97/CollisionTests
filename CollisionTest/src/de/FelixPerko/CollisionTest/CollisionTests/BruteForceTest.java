@@ -26,4 +26,14 @@ public class BruteForceTest extends CollisionTest {
 		}
 	}
 
+	@Override
+	public void addObject(TestObject newObject) {
+		
+	}
+
+	@Override
+	public void removeObject(TestObject removeObject) {
+		
+	}
+
 }

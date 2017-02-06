@@ -27,4 +27,14 @@ public class SweepAndPruneTest extends CollisionTest {
 		sapInstance.update();
 	}
 
+	@Override
+	public void addObject(TestObject newObject) {
+		sapInstance.addObject(newObject.getBox());
+	}
+
+	@Override
+	public void removeObject(TestObject removeObject) {
+		sapInstance.removeObject(removeObject.getBox());
+	}
+
 }

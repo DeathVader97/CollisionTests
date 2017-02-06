@@ -4,33 +4,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-
-import de.FelixPerko.CollisionTest.Vector2d;
+import java.util.Map.Entry;
 
 public class SAP {
 	
 	ArrayList<EndPoint> x,y;
 	HashMap<Integer,HashMap<Integer,Byte>> intersections = new HashMap<>();
 	
-	ArrayList<Box> addListX = new ArrayList<>();
-	ArrayList<Box> addListY = new ArrayList<>();
-	ArrayList<Box> removeListX = new ArrayList<>();
-	ArrayList<Box> removeListY = new ArrayList<>();
+	ArrayList<EndPoint> addListX = new ArrayList<>();
+	ArrayList<EndPoint> addListY = new ArrayList<>();
+	ArrayList<EndPoint> removeListX = new ArrayList<>();
+	ArrayList<EndPoint> removeListY = new ArrayList<>();
 	
-	Comparator<Box> xComp = new Comparator<Box>() {
-		public int compare(Box o1, Box o2) {
-			if (o1.xMin.value < o2.xMin.value)
+	Comparator<EndPoint> comp = new Comparator<EndPoint>() {
+		public int compare(EndPoint o1, EndPoint o2) {
+			if (o1.value < o2.value)
 				return -1;
-			else if (o1.xMin.value > o2.xMin.value)
-				return 1;
-			return 0;
-		}
-	};
-	Comparator<Box> yComp = new Comparator<Box>() {
-		public int compare(Box o1, Box o2) {
-			if (o1.yMin.value < o2.yMin.value)
-				return -1;
-			else if (o1.yMin.value > o2.yMin.value)
+			else if (o1.value > o2.value)
 				return 1;
 			return 0;
 		}
@@ -49,18 +39,28 @@ public class SAP {
 	}
 	
 	public void addObject(Box box) {
-		addListX.add(box);
-		addListY.add(box);
+		addListX.add(box.xMin);
+		addListX.add(box.xMax);
+		addListY.add(box.yMin);
+		addListY.add(box.yMax);
 	}
 	
 	public void removeObject(Box box){
+		removeListX.add(box.xMin);
+		removeListX.add(box.xMax);
+		removeListY.add(box.yMin);
+		removeListY.add(box.yMax);
 	}
 	
 	public void update(){
 		long t1 = System.nanoTime();
-		Collections.sort(addListX, xComp);
-		Collections.sort(addListY, yComp);
+		Collections.sort(addListX, comp);
+		Collections.sort(addListY, comp);
+		Collections.sort(removeListX, comp);
+		Collections.sort(removeListY, comp);
 		long t2 = System.nanoTime();
+		removeObjects(x, removeListX, true);
+		removeObjects(y, removeListY, false);
 		insertNewObjects(x, addListX, true);
 		insertNewObjects(y, addListY, false);
 		long t3 = System.nanoTime();
@@ -73,91 +73,188 @@ public class SAP {
 //		System.exit(0);
 	}
 
-	private void insertNewObjects(ArrayList<EndPoint> list, ArrayList<Box> add, boolean x) {
-		if (add.size() == 0)
+	private void removeObjects(ArrayList<EndPoint> list, ArrayList<EndPoint> remove, boolean x) {
+		if (remove.isEmpty())
 			return;
-		int addIndex = 0;
-		if (x){
-			double nextValue = add.get(addIndex).xMin.value;
-			for (int i = 0 ; i < list.size() ; i++){
-				if (list.get(i).value >= nextValue){
-					list.add(i, add.get(addIndex).xMin);
-					addIndex++;
-					nextValue = add.get(addIndex).xMin.value;
-				}
-			}
-			for (int i = addIndex ; i < add.size() ; i++){
-				list.add(add.get(i).xMin);
-			}
-			
-			addIndex = 0;
-			nextValue = add.get(addIndex).xMax.value;
-			for (int i = 0 ; i < list.size() ; i++){
-				if (list.get(i).value >= nextValue){
-					list.add(i, add.get(addIndex).xMax);
-					addIndex++;
-					nextValue = add.get(addIndex).xMax.value;
-				}
-			}
-			for (int i = addIndex ; i < add.size() ; i++){
-				list.add(add.get(i).xMax);
-			}
-		} else {
-			double nextValue = add.get(addIndex).yMin.value;
-			for (int i = 0 ; i < list.size() ; i++){
-				if (list.get(i).value >= nextValue){
-					list.add(i, add.get(addIndex).yMin);
-					addIndex++;
-					nextValue = add.get(addIndex).yMin.value;
-				}
-			}
-			for (int i = addIndex ; i < add.size() ; i++){
-				list.add(add.get(i).yMin);
-			}
-			
-			addIndex = 0;
-			nextValue = add.get(addIndex).yMax.value;
-			for (int i = 0 ; i < list.size() ; i++){
-				if (list.get(i).value >= nextValue){
-					list.add(i, add.get(addIndex).yMax);
-					addIndex++;
-					nextValue = add.get(addIndex).yMax.value;
-				}
-			}
-			for (int i = addIndex ; i < add.size() ; i++){
-				list.add(add.get(i).yMax);
-			}
-			
-			//ADD NEW OVERLAPS
-			addIndex = 0;
-			int id = add.get(addIndex).id;
-			ArrayList<Box> activeAdds = new ArrayList<>();
-			for (int i = 0 ; i < list.size() ; i++){
-				EndPoint e = list.get(i);
-				Box b1 = e.owner;
-				if (!e.isMin && b1.id == id){
-					activeAdds.remove(b1);
-				}
-
-				for (Box b : activeAdds){
-					boolean collides = !(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value || b1.yMax.value < b.yMin.value || b.yMax.value < b1.yMin.value);
-					if (collides){
-						if (!b1.collisions.containsKey(b.id)){
-							b1.collisions.put((Integer)b.id, true);
-							b.collisions.put((Integer)b1.id, true);
-						}
-					} else {
-						e.owner.collisions.remove((Integer)b.id);
-						b.collisions.remove((Integer)e.owner.id);
+		int nextIndex = 0;
+		EndPoint nextPoint = remove.get(0);
+		for (int i = 0 ; i < list.size() ; i++){
+			if (list.get(i) == nextPoint){
+				list.remove(i);
+				if (!x && !nextPoint.isMin){
+					Box box = nextPoint.owner;
+					for (Box b : box.collisions.values()){
+						b.collisions.remove(box.id);
 					}
 				}
+				nextIndex++;
+				if (nextIndex >= remove.size())
+					break;
+				nextPoint = remove.get(nextIndex);
+				i--;
+			}
+		}
+		remove.clear();
+	}
 
-				if (e.isMin && e.owner.id == id)
-					activeAdds.add(e.owner);
+	private void insertNewObjects(ArrayList<EndPoint> list, ArrayList<EndPoint> add, boolean x) {
+		if (add.isEmpty())
+			return;
+		ArrayList<Box> openBoxes = new ArrayList<>();
+		int nextIndex = 0;
+		float nextValue = add.get(0).value;
+		boolean end = false;
+		for (int i = 0 ; i < list.size() ; i++){
+			EndPoint p = list.get(i);
+			if (p.value >= nextValue){
+				EndPoint newP = add.get(nextIndex);
+				if (!x){
+					if (newP.isMin)
+						openBoxes.add(newP.owner);
+					else
+						openBoxes.remove(newP.owner);
+				}
+				list.add(newP);
+				nextIndex++;
+				if (nextIndex >= add.size())
+					end = true;
+				else
+					nextValue = add.get(nextIndex).value;
+			}
+			if (!x){
+				Box b1 = list.get(i).owner;
+				for (Box b : openBoxes){
+					if (b == b1)
+						continue;
+					boolean collides = !(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value);
+					if (collides){
+						if (!b1.collisions.containsKey(b.id)){
+							b1.collisions.put((Integer)b.id, b);
+							b.collisions.put((Integer)b1.id, b1);
+						}
+					}
+				}
+			}
+			if (end)
+				break;
+		}
+		for (int i = nextIndex ; i < add.size() ; i++){
+			EndPoint newP = add.get(i);
+			if (!x){
+				if (newP.isMin)
+					openBoxes.add(newP.owner);
+				else
+					openBoxes.remove(newP.owner);
+			}
+			list.add(newP);
+			if (!x){
+				Box b1 = list.get(i).owner;
+				for (Box b : openBoxes){
+					if (b == newP.owner)
+						continue;
+					boolean collides = !(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value);
+					if (collides){
+						if (!b1.collisions.containsKey(b.id)){
+							b1.collisions.put((Integer)b.id, b);
+							b.collisions.put((Integer)b1.id, b1);
+						}
+					}
+				}
 			}
 		}
 		add.clear();
 	}
+
+//	private void insertNewObjects(ArrayList<EndPoint> list, ArrayList<Box> add, boolean x) {
+//		if (add.size() == 0)
+//			return;
+//		int addIndex = 0;
+//		if (x){
+//			double nextValue = add.get(addIndex).xMin.value;
+//			for (int i = 0 ; i < list.size() ; i++){
+//				if (list.get(i).value >= nextValue){
+//					list.add(i, add.get(addIndex).xMin);
+//					addIndex++;
+//					nextValue = add.get(addIndex).xMin.value;
+//				}
+//			}
+//			for (int i = addIndex ; i < add.size() ; i++){
+//				list.add(add.get(i).xMin);
+//			}
+//			
+//			addIndex = 0;
+//			nextValue = add.get(addIndex).xMax.value;
+//			for (int i = 0 ; i < list.size() ; i++){
+//				if (list.get(i).value >= nextValue){
+//					list.add(i, add.get(addIndex).xMax);
+//					addIndex++;
+//					nextValue = add.get(addIndex).xMax.value;
+//				}
+//			}
+//			for (int i = addIndex ; i < add.size() ; i++){
+//				list.add(add.get(i).xMax);
+//			}
+//		} else {
+//			double nextValue = add.get(addIndex).yMin.value;
+//			for (int i = 0 ; i < list.size() ; i++){
+//				if (list.get(i).value >= nextValue){
+//					list.add(i, add.get(addIndex).yMin);
+//					addIndex++;
+//					nextValue = add.get(addIndex).yMin.value;
+//				}
+//			}
+//			for (int i = addIndex ; i < add.size() ; i++){
+//				list.add(add.get(i).yMin);
+//			}
+//			
+//			addIndex = 0;
+//			nextValue = add.get(addIndex).yMax.value;
+//			for (int i = 0 ; i < list.size() ; i++){
+//				if (list.get(i).value >= nextValue){
+//					list.add(i, add.get(addIndex).yMax);
+//					addIndex++;
+//					nextValue = add.get(addIndex).yMax.value;
+//				}
+//			}
+//			for (int i = addIndex ; i < add.size() ; i++){
+//				list.add(add.get(i).yMax);
+//			}
+//			
+//			//ADD NEW OVERLAPS
+//			addIndex = 0;
+//			int id = add.get(addIndex).id;
+//			ArrayList<Box> activeAdds = new ArrayList<>();
+//			for (int i = 0 ; i < list.size() ; i++){
+//				EndPoint e = list.get(i);
+//				Box b1 = e.owner;
+//				boolean remove = false;
+//				for (Box b : activeAdds){
+//					if (b.id == b1.id){
+//						remove = true;
+//						continue;
+//					}
+//					boolean collides = !(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value);
+//					if (collides){
+//						if (!b1.collisions.containsKey(b.id)){
+//							b1.collisions.put((Integer)b.id, true);
+//							b.collisions.put((Integer)b1.id, true);
+//						}
+//					}
+//				}
+//				
+//				if (remove)
+//					activeAdds.remove(b1);
+//				if (e.isMin && e.owner.id == id){
+//					activeAdds.add(e.owner);
+//					addIndex++;
+//					if (addIndex >= add.size())
+//						break;
+//					id = add.get(addIndex).id;
+//				}
+//			}
+//		}
+//		add.clear();
+//	}
 
 	public void updateList(ArrayList<EndPoint> list, boolean isXAxis){
 		
@@ -182,8 +279,8 @@ public class SAP {
 				boolean collides = !(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value);
 				if (collides){
 					if (!b1.collisions.containsKey(b2.id)){
-						b1.collisions.put((Integer)b2.id, true);
-						b2.collisions.put((Integer)b1.id, true);
+						b1.collisions.put((Integer)b2.id, b2);
+						b2.collisions.put((Integer)b1.id, b1);
 					}
 				} else {
 					e.owner.collisions.remove((Integer)e2.owner.id);

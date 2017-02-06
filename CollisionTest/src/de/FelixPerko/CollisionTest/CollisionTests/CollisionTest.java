@@ -32,10 +32,12 @@ public abstract class CollisionTest {
 //		System.out.println("Result "+getClass().getSimpleName()+":");
 //		System.out.println("init: "+initTime*factor);
 //		System.out.println("tick: "+(tickTime*factor/ticks));
-		System.out.print((int)(ticks*factor));
+		System.out.print(Math.round(ticks*factor*100)/100.0);
 		ticks = 0;
 	}
 	
 	protected abstract void onInit(ArrayList<TestObject> objects);
 	protected abstract void onTick(ArrayList<TestObject> objects);
+	public abstract void addObject(TestObject newObject);
+	public abstract void removeObject(TestObject removeObject);
 }
