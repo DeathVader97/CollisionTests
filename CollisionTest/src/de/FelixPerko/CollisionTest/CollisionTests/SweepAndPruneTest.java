@@ -12,13 +12,13 @@ public class SweepAndPruneTest extends CollisionTest {
 	
 	@Override
 	protected void onInit(ArrayList<TestObject> objects) {
-		System.out.println("SAP init");
+//		System.out.println("SAP init");
 		sapInstance = new SAP(objects.size());
 		for (TestObject o : objects){
 			sapInstance.addObject(o.getBox());
 		}
 		sapInstance.update();
-		System.out.println("finish init");
+//		System.out.println("finish init");
 	}
 
 	@Override

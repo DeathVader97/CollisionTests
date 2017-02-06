@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import de.FelixPerko.CollisionTest.Vector2d;
+
 public class SAP {
 	
 	ArrayList<EndPoint> x,y;
@@ -12,6 +14,8 @@ public class SAP {
 	
 	ArrayList<Box> addListX = new ArrayList<>();
 	ArrayList<Box> addListY = new ArrayList<>();
+	ArrayList<Box> removeListX = new ArrayList<>();
+	ArrayList<Box> removeListY = new ArrayList<>();
 	
 	Comparator<Box> xComp = new Comparator<Box>() {
 		public int compare(Box o1, Box o2) {
@@ -47,132 +51,90 @@ public class SAP {
 	public void addObject(Box box) {
 		addListX.add(box);
 		addListY.add(box);
-//		x.add(box.xMin);
-//		x.add(box.xMax);
-//		y.add(box.yMin);
-//		y.add(box.yMax);
 	}
 	
 	public void removeObject(Box box){
 	}
 	
 	public void update(){
+		long t1 = System.nanoTime();
 		Collections.sort(addListX, xComp);
 		Collections.sort(addListY, yComp);
-		
+		long t2 = System.nanoTime();
 		insertNewObjects(x, addListX, true);
 		insertNewObjects(y, addListY, false);
-		
+		long t3 = System.nanoTime();
 		updateList(x,true);
 		updateList(y,false);
+		long t4 = System.nanoTime();
+		double tg = t4-t1;
+//		System.out.println("total time: "+((t4-t1)/1000000000.0+"s"));
+//		System.out.println((t2-t1)/tg+", "+(t3-t2)/tg+", "+(t4-t3)/tg);
+//		System.exit(0);
 	}
-	
+
 	private void insertNewObjects(ArrayList<EndPoint> list, ArrayList<Box> add, boolean x) {
-		int j = 0; //minPos
-		int j2 = 0; //maxPos
-		for (Box b : add){
-//			System.out.println();
-//			for (int i = 0 ; i < list.size() ; i++)
-//				System.out.print(list.get(i).owner.id+":"+(int)list.get(i).value+", ");
-			//add min
-			if (x){
-				if (j >= list.size())
-					list.add(b.xMin);
-				else {
-					while (j < list.size() && (b.xMin.value > list.get(j).value))
-						j++;
-					list.add(j,b.xMin);
-				}
-				j++;
-			} else {
-				if (j >= list.size())
-					list.add(b.xMin);
-				else {
-					while (j < list.size() && (!list.get(j).isMin || b.yMin.value > list.get(j).value))
-						j++;
-					list.add(j,b.yMin);
-					j++;
+		if (add.size() == 0)
+			return;
+		int addIndex = 0;
+		if (x){
+			double nextValue = add.get(addIndex).xMin.value;
+			for (int i = 0 ; i < list.size() ; i++){
+				if (list.get(i).value >= nextValue){
+					list.add(i, add.get(addIndex).xMin);
+					addIndex++;
+					nextValue = add.get(addIndex).xMin.value;
 				}
 			}
-			
-			//add max
-			if (j2 <= j)
-				j2 = j+1;
-			int setMaxTo = list.size();
-			if (j2 >= list.size())
-				if (x)
-					list.add(b.xMax);
-				else
-					list.add(b.xMin);
-			else {
-				while (j2 < list.size() && list.get(j2).isMin)
-					j2++;
-				if (x){
-					if (j2 >= list.size())
-						list.add(b.xMax);
-					else {
-						while (j2+1 < list.size() && b.xMax.value >= list.get(j2+1).value){
-							j2++;
-							while (list.get(j2).isMin)
-								j2++;
-						}
-						if (b.xMax.value >= list.get(j2-1).value && b.xMax.value <= list.get(j2).value){
-							list.add(j2, b.xMax);
-							setMaxTo = j2;
-							j2++;
-						} else {
-							list.add(b.xMax);
-							setMaxTo = list.size();
-						}
-					}
-				} else {
-					if (j2 >= list.size())
-						list.add(b.xMax);
-					else {
-						while (j2+1 < list.size() && b.yMax.value >= list.get(j2+1).value){
-							j2++;
-							while (list.get(j2).isMin)
-								j2++;
-						}
-						if (b.yMax.value >= list.get(j2-1).value && b.yMax.value <= list.get(j2).value){
-							list.add(j2, b.yMax);
-							setMaxTo = j2;
-							j2++;
-						} else {
-							setMaxTo = list.size();
-							list.add(b.yMax);
-						}
-					}
-				}
+			for (int i = addIndex ; i < add.size() ; i++){
+				list.add(add.get(i).xMin);
 			}
 			
-			//update intersections
-			int index = 0;
-			if (!x)
-				index = 1;
-			for (int i = j ; i < setMaxTo ; i++){
-				byte data = getIntersectionByte(list.get(i).owner.id, b.id);
-				if (((data >> index) & 1) == 0){
-					if (index == 0)
-						data++;
-					else
-						data += 2;
-					setIntersectionByte(list.get(i).owner.id, b.id, data);
+			addIndex = 0;
+			nextValue = add.get(addIndex).xMax.value;
+			for (int i = 0 ; i < list.size() ; i++){
+				if (list.get(i).value >= nextValue){
+					list.add(i, add.get(addIndex).xMax);
+					addIndex++;
+					nextValue = add.get(addIndex).xMax.value;
 				}
+			}
+			for (int i = addIndex ; i < add.size() ; i++){
+				list.add(add.get(i).xMax);
+			}
+		} else {
+			double nextValue = add.get(addIndex).yMin.value;
+			for (int i = 0 ; i < list.size() ; i++){
+				if (list.get(i).value >= nextValue){
+					list.add(i, add.get(addIndex).yMin);
+					addIndex++;
+					nextValue = add.get(addIndex).yMin.value;
+				}
+			}
+			for (int i = addIndex ; i < add.size() ; i++){
+				list.add(add.get(i).yMin);
+			}
+			
+			addIndex = 0;
+			nextValue = add.get(addIndex).yMax.value;
+			for (int i = 0 ; i < list.size() ; i++){
+				if (list.get(i).value >= nextValue){
+					list.add(i, add.get(addIndex).yMax);
+					addIndex++;
+					nextValue = add.get(addIndex).yMax.value;
+				}
+			}
+			for (int i = addIndex ; i < add.size() ; i++){
+				list.add(add.get(i).yMax);
 			}
 		}
 		add.clear();
 	}
 
 	public void updateList(ArrayList<EndPoint> list, boolean isXAxis){
-		int index = 0;
-		if (!isXAxis)
-			index = 1;
-		
-		int swaps = 0;
 		
 		int size = list.size();
-		for (int i = 0 ; i < size ; i++){
+		for (int i = 1 ; i < size ; i++){
 			EndPoint e = list.get(i);
 			float value = e.value;
 			int nr = i;
@@ -184,37 +146,21 @@ public class SAP {
 				list.set(j, e);
 				nr = j;
 				
-				swaps++;
-				
 				//SWAP LOGIC:
-				if (e.isMin && !e2.isMin){//goes Inside
-					byte b = getIntersectionByte(e.owner.id, e2.owner.id);
-					if (((b >> index) & 1) == 0){
-						if (index == 0)
-							b++;
-						else
-							b += 2;
-						setIntersectionByte(e.owner.id, e2.owner.id, b);
+				Box b1 = e.owner;
+				Box b2 = e2.owner;
+				boolean collides = !(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value);
+				if (collides){
+					if (!b1.collisions.containsKey(b2.id)){
+						b1.collisions.put((Integer)b2.id, true);
+						b2.collisions.put((Integer)b1.id, true);
 					}
-				} else if (!e.isMin && e2.isMin){//goes Outside
-					byte b = getIntersectionByte(e.owner.id, e2.owner.id);
-					if (((b >> index) & 1) == 1){
-						if (index == 0)
-							b--;
-						else
-							b -= 2;
-						setIntersectionByte(e.owner.id, e2.owner.id, b);
-					}
+				} else {
+					e.owner.collisions.remove((Integer)e2.owner.id);
+					e2.owner.collisions.remove((Integer)e.owner.id);
 				}
 			}
-//			if (i != nr)
-//				System.out.println("swapped from "+i+" to "+nr);
 		}
-
-//		System.out.println();
-//		for (int i = 0 ; i < list.size() ; i++)
-//			System.out.print(list.get(i).owner.id+":"+(int)list.get(i).value+", ");
-//		System.out.println(swaps);
 	}
 	
 	private byte getIntersectionByte(int id1, int id2){

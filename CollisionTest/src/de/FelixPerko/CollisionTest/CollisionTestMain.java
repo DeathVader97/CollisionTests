@@ -2,38 +2,48 @@ package de.FelixPerko.CollisionTest;
 
 import java.util.ArrayList;
 
-import de.FelixPerko.CollisionTest.CollisionTests.BruteForceTest;
 import de.FelixPerko.CollisionTest.CollisionTests.CollisionTest;
 import de.FelixPerko.CollisionTest.CollisionTests.SweepAndPruneTest;
 
 public class CollisionTestMain {
 	
-	public static int totalObjects = 5000;
-	public static double maxSpeed = 20;
+	public static int totalObjects = 1000;
+	public static double maxSpeed = 100;
 	public static double collisionDistance = 10;
 	public static Vector2d bounds = new Vector2d(1000, 1000);
-	public static long simulationTime = 10*1000000000l;
+	public static long simulationTime = (long)(60*1000000000l);
 	
 	public static ArrayList<TestObject> objects = new ArrayList<>();
 	static ArrayList<CollisionTest> tests = new ArrayList<>();
 	
+	private static WindowManager windowManager = new WindowManager();
+	
 	public static void main(String[] args) {
+		windowManager.init();
 		addTests();
-		initObjects();
-		for (CollisionTest test : tests){
-			test.init();
-			long timeUsed = loop(test);
-			System.out.println("time Used: "+(timeUsed/1000000000.0));
-			test.printData(timeUsed, simulationTime);
+		for (int i = 1 ; i <= 1 ; i++){
+			totalObjects = 10000*i;
+			initObjects();
+	//		System.out.println("testing for "+totalObjects+" objects");
+//			System.out.print(totalObjects+",");
+			for (CollisionTest test : tests){
+				test.init();
+				long timeUsed = loop(test);
+	//			System.out.println("time Used: "+(timeUsed/1000000000.0));
+				test.printData(timeUsed, 1000000000l);
+				System.out.print(",");
+			}
+			System.out.println();
 		}
 	}
 
 	private static void addTests() {
+//		tests.add(new BruteForceTest());
 		tests.add(new SweepAndPruneTest());
-		tests.add(new BruteForceTest());
 	}
 
 	private static void initObjects() {
+		objects.clear();
 		for (int i = 0 ; i < totalObjects ; i++){
 			objects.add(new TestObject(
 					new Vector2d(bounds.x*Math.random(), bounds.y*Math.random()),
@@ -60,6 +70,7 @@ public class CollisionTestMain {
 			double deltaT = ((double)currentTime-lastTime)/simulationTime;
 			TickHelper.moveObjects(deltaT);
 			test.tick();
+			windowManager.update();
 			lastTime = currentTime;
 		}
 	}

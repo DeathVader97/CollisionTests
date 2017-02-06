@@ -27,11 +27,13 @@ public abstract class CollisionTest {
 	}
 	
 	public void printData(long totalTime, long expectedTime){
-		double factor = 1;
-		System.out.println("Result "+getClass().getSimpleName()+":");
-		System.out.println("init: "+initTime*factor);
-		System.out.println("tick: "+(tickTime*factor/ticks));
-		System.out.println("total Ticks: "+ticks*factor);
+		double factor = expectedTime/(double)totalTime;
+//		System.out.println();
+//		System.out.println("Result "+getClass().getSimpleName()+":");
+//		System.out.println("init: "+initTime*factor);
+//		System.out.println("tick: "+(tickTime*factor/ticks));
+		System.out.print((int)(ticks*factor));
+		ticks = 0;
 	}
 	
 	protected abstract void onInit(ArrayList<TestObject> objects);

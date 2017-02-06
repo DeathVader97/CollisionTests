@@ -9,7 +9,7 @@ public class TestObject {
 	Box SAPbox;
 	
 	public TestObject(Vector2d pos, Vector2d vel) {
-		SAPbox = new Box();
+		SAPbox = new Box(this);
 		setPos(pos);
 		setVel(vel);
 	}
