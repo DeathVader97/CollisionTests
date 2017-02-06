@@ -13,7 +13,7 @@ public class WindowManager {
 	
 	JFrame frame;
 	CustomComponent c;
-	boolean disabled = true;
+	boolean disabled = false;
 	
 	public void init() {
 		if (disabled)

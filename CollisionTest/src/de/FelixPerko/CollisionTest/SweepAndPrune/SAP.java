@@ -127,6 +127,34 @@ public class SAP {
 			for (int i = addIndex ; i < add.size() ; i++){
 				list.add(add.get(i).yMax);
 			}
+			
+			//ADD NEW OVERLAPS
+			addIndex = 0;
+			int id = add.get(addIndex).id;
+			ArrayList<Box> activeAdds = new ArrayList<>();
+			for (int i = 0 ; i < list.size() ; i++){
+				EndPoint e = list.get(i);
+				Box b1 = e.owner;
+				if (!e.isMin && b1.id == id){
+					activeAdds.remove(b1);
+				}
+
+				for (Box b : activeAdds){
+					boolean collides = !(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value || b1.yMax.value < b.yMin.value || b.yMax.value < b1.yMin.value);
+					if (collides){
+						if (!b1.collisions.containsKey(b.id)){
+							b1.collisions.put((Integer)b.id, true);
+							b.collisions.put((Integer)b1.id, true);
+						}
+					} else {
+						e.owner.collisions.remove((Integer)b.id);
+						b.collisions.remove((Integer)e.owner.id);
+					}
+				}
+
+				if (e.isMin && e.owner.id == id)
+					activeAdds.add(e.owner);
+			}
 		}
 		add.clear();
 	}
@@ -147,6 +175,8 @@ public class SAP {
 				nr = j;
 				
 				//SWAP LOGIC:
+				if (e.isMin == e2.isMin)
+					continue;
 				Box b1 = e.owner;
 				Box b2 = e2.owner;
 				boolean collides = !(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value);

@@ -2,16 +2,17 @@ package de.FelixPerko.CollisionTest;
 
 import java.util.ArrayList;
 
+import de.FelixPerko.CollisionTest.CollisionTests.BruteForceTest;
 import de.FelixPerko.CollisionTest.CollisionTests.CollisionTest;
 import de.FelixPerko.CollisionTest.CollisionTests.SweepAndPruneTest;
 
 public class CollisionTestMain {
 	
-	public static int totalObjects = 1000;
-	public static double maxSpeed = 100;
-	public static double collisionDistance = 10;
+	public static int totalObjects = 10000;
+	public static double maxSpeed = 500;
+	public static double collisionDistance = 5;
 	public static Vector2d bounds = new Vector2d(1000, 1000);
-	public static long simulationTime = (long)(60*1000000000l);
+	public static long simulationTime = (long)(10*1000000000l);
 	
 	public static ArrayList<TestObject> objects = new ArrayList<>();
 	static ArrayList<CollisionTest> tests = new ArrayList<>();
@@ -22,7 +23,7 @@ public class CollisionTestMain {
 		windowManager.init();
 		addTests();
 		for (int i = 1 ; i <= 1 ; i++){
-			totalObjects = 10000*i;
+			totalObjects = 7500*i;
 			initObjects();
 	//		System.out.println("testing for "+totalObjects+" objects");
 //			System.out.print(totalObjects+",");
@@ -38,7 +39,7 @@ public class CollisionTestMain {
 	}
 
 	private static void addTests() {
-//		tests.add(new BruteForceTest());
+		tests.add(new BruteForceTest());
 		tests.add(new SweepAndPruneTest());
 	}
 
