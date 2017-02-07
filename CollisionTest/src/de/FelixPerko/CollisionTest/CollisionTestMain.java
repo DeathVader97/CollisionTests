@@ -8,11 +8,11 @@ import de.FelixPerko.CollisionTest.CollisionTests.SweepAndPruneTest;
 
 public class CollisionTestMain {
 	
-	public static int totalObjects = 10000;
+	public static int totalObjects = 100000;
 	public static double maxSpeed = 500;
 	public static double collisionDistance = 2;
 	public static Vector2d bounds = new Vector2d(1000, 1000);
-	public static long simulationTime = (long)(10*1000000000l);
+	public static long simulationTime = (long)(60*1000000000l);
 	public static int changesPerSecond = 0;
 	
 	public static ArrayList<TestObject> objects = new ArrayList<>();
@@ -23,10 +23,13 @@ public class CollisionTestMain {
 	public static void main(String[] args) {
 		windowManager.init();
 		addTests();
-		initObjects();
-		for (int i = 1 ; i <= 10 ; i++){
-			totalObjects = 5000;
-			changesPerSecond = i*20;
+		for (int i = 1 ; i <= 1 ; i++){
+//			if (i == 1)
+//				totalObjects = 100;
+//			else
+//				totalObjects = 10000;
+			initObjects();
+//			changesPerSecond = i*20;
 			int testNr = 0;
 			for (CollisionTest test : tests){
 				test.init();
