@@ -13,6 +13,7 @@ public class CollisionTestMain {
 	public static double maxSpeed = 500;
 	public static double collisionDistance = 2;
 	public static Vector2d bounds = new Vector2d(1000, 1000);
+	
 	public static long simulationTime = (long)(10*1000000000l);
 	public static int changesPerSecond = 50;
 	
@@ -26,7 +27,6 @@ public class CollisionTestMain {
 		addTests();
 		for (int i = 1 ; i <= 1 ; i++){
 			totalObjects = i*10000;
-			initObjects();
 //			changesPerSecond = i*20;
 			int testNr = 0;
 			for (CollisionTest test : tests){
