@@ -9,8 +9,8 @@ import de.FelixPerko.CollisionTest.CollisionTests.SweepAndPruneTest;
 
 public class CollisionTestMain {
 	
-	public static int totalObjects = 1000;
-	public static double maxSpeed = 200;
+	public static int totalObjects = 100000;
+	public static double maxSpeed = 500;
 	public static double collisionDistance = 2;
 	public static Vector2d bounds = new Vector2d(1000, 1000);
 	public static long simulationTime = (long)(10*1000000000l);
