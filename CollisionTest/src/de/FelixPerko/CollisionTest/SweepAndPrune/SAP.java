@@ -3,6 +3,7 @@ package de.FelixPerko.CollisionTest.SweepAndPrune;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -38,14 +39,14 @@ public class SAP {
 		y = new ArrayList<>(capacity);
 	}
 	
-	public void addObject(Box box) {
+	public synchronized void addObject(Box box) {
 		addListX.add(box.xMin);
 		addListX.add(box.xMax);
 		addListY.add(box.yMin);
 		addListY.add(box.yMax);
 	}
 	
-	public void removeObject(Box box){
+	public synchronized void removeObject(Box box){
 		removeListX.add(box.xMin);
 		removeListX.add(box.xMax);
 		removeListY.add(box.yMin);
@@ -54,10 +55,14 @@ public class SAP {
 	
 	public void update(){
 		long t1 = System.nanoTime();
-		Collections.sort(addListX, comp);
-		Collections.sort(addListY, comp);
-		Collections.sort(removeListX, comp);
-		Collections.sort(removeListY, comp);
+		if (!addListX.isEmpty()){
+			Collections.sort(addListX, comp);
+			Collections.sort(addListY, comp);
+		}
+		if (!addListY.isEmpty()){
+			Collections.sort(removeListX, comp);
+			Collections.sort(removeListY, comp);
+		}
 		long t2 = System.nanoTime();
 		removeObjects(x, removeListX, true);
 		removeObjects(y, removeListY, false);
@@ -68,10 +73,12 @@ public class SAP {
 		updateList(y,false);
 		long t4 = System.nanoTime();
 		double tg = t4-t1;
-//		System.out.println("total time: "+((t4-t1)/1000000000.0+"s"));
+//		System.out.println("total time: "+((t4-t1)+" for "+x.size()));
 //		System.out.println((t2-t1)/tg+", "+(t3-t2)/tg+", "+(t4-t3)/tg);
 //		System.exit(0);
 	}
+	
+	ArrayList<Box> removeIDs = new ArrayList<>();
 
 	private void removeObjects(ArrayList<EndPoint> list, ArrayList<EndPoint> remove, boolean x) {
 		if (remove.isEmpty())
@@ -83,9 +90,11 @@ public class SAP {
 				list.remove(i);
 				if (!x && !nextPoint.isMin){
 					Box box = nextPoint.owner;
-					for (Box b : box.collisions.values()){
+					removeIDs.addAll(box.collisions.values());
+					for (Box b : removeIDs){
 						b.collisions.remove(box.id);
 					}
+					removeIDs.clear();
 				}
 				nextIndex++;
 				if (nextIndex >= remove.size())
@@ -165,99 +174,7 @@ public class SAP {
 		add.clear();
 	}
 
-//	private void insertNewObjects(ArrayList<EndPoint> list, ArrayList<Box> add, boolean x) {
-//		if (add.size() == 0)
-//			return;
-//		int addIndex = 0;
-//		if (x){
-//			double nextValue = add.get(addIndex).xMin.value;
-//			for (int i = 0 ; i < list.size() ; i++){
-//				if (list.get(i).value >= nextValue){
-//					list.add(i, add.get(addIndex).xMin);
-//					addIndex++;
-//					nextValue = add.get(addIndex).xMin.value;
-//				}
-//			}
-//			for (int i = addIndex ; i < add.size() ; i++){
-//				list.add(add.get(i).xMin);
-//			}
-//			
-//			addIndex = 0;
-//			nextValue = add.get(addIndex).xMax.value;
-//			for (int i = 0 ; i < list.size() ; i++){
-//				if (list.get(i).value >= nextValue){
-//					list.add(i, add.get(addIndex).xMax);
-//					addIndex++;
-//					nextValue = add.get(addIndex).xMax.value;
-//				}
-//			}
-//			for (int i = addIndex ; i < add.size() ; i++){
-//				list.add(add.get(i).xMax);
-//			}
-//		} else {
-//			double nextValue = add.get(addIndex).yMin.value;
-//			for (int i = 0 ; i < list.size() ; i++){
-//				if (list.get(i).value >= nextValue){
-//					list.add(i, add.get(addIndex).yMin);
-//					addIndex++;
-//					nextValue = add.get(addIndex).yMin.value;
-//				}
-//			}
-//			for (int i = addIndex ; i < add.size() ; i++){
-//				list.add(add.get(i).yMin);
-//			}
-//			
-//			addIndex = 0;
-//			nextValue = add.get(addIndex).yMax.value;
-//			for (int i = 0 ; i < list.size() ; i++){
-//				if (list.get(i).value >= nextValue){
-//					list.add(i, add.get(addIndex).yMax);
-//					addIndex++;
-//					nextValue = add.get(addIndex).yMax.value;
-//				}
-//			}
-//			for (int i = addIndex ; i < add.size() ; i++){
-//				list.add(add.get(i).yMax);
-//			}
-//			
-//			//ADD NEW OVERLAPS
-//			addIndex = 0;
-//			int id = add.get(addIndex).id;
-//			ArrayList<Box> activeAdds = new ArrayList<>();
-//			for (int i = 0 ; i < list.size() ; i++){
-//				EndPoint e = list.get(i);
-//				Box b1 = e.owner;
-//				boolean remove = false;
-//				for (Box b : activeAdds){
-//					if (b.id == b1.id){
-//						remove = true;
-//						continue;
-//					}
-//					boolean collides = !(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value);
-//					if (collides){
-//						if (!b1.collisions.containsKey(b.id)){
-//							b1.collisions.put((Integer)b.id, true);
-//							b.collisions.put((Integer)b1.id, true);
-//						}
-//					}
-//				}
-//				
-//				if (remove)
-//					activeAdds.remove(b1);
-//				if (e.isMin && e.owner.id == id){
-//					activeAdds.add(e.owner);
-//					addIndex++;
-//					if (addIndex >= add.size())
-//						break;
-//					id = add.get(addIndex).id;
-//				}
-//			}
-//		}
-//		add.clear();
-//	}
-
 	public void updateList(ArrayList<EndPoint> list, boolean isXAxis){
-		
 		int size = list.size();
 		for (int i = 1 ; i < size ; i++){
 			EndPoint e = list.get(i);
@@ -287,41 +204,6 @@ public class SAP {
 					e2.owner.collisions.remove((Integer)e.owner.id);
 				}
 			}
-		}
-	}
-	
-	private byte getIntersectionByte(int id1, int id2){
-		if (id1 > id2){
-			int temp = id2;
-			id2 = id1;
-			id1 = temp;
-		}
-		HashMap<Integer, Byte> map = intersections.get(id1);
-		if (map == null)
-			return (byte)0;
-		Byte b = map.get(id2);
-		if (b == null)
-			return (byte)0;
-		return b;
-	}
-	
-	private void setIntersectionByte(int id1, int id2, byte set){
-		if (set == 0){
-			HashMap<Integer, Byte> map = intersections.get(id1);
-			if (map != null){
-				map.remove(id2);
-			}
-		} else {
-			HashMap<Integer, Byte> map = intersections.get(id1);
-			if (map == null){
-				map = new HashMap<>();
-				intersections.put(id1, map);
-				map.put(id2, set);
-				return;
-			}
-			if (map.containsKey(id2))
-				map.remove(id2);
-			map.put(id2, set);
 		}
 	}
 }

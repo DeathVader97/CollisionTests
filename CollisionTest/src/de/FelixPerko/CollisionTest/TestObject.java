@@ -6,10 +6,10 @@ public class TestObject {
 	Vector2d pos;
 	Vector2d vel;
 	
-	Box SAPbox;
+	public Box SAPbox;
 	
 	public TestObject(Vector2d pos, Vector2d vel) {
-		SAPbox = new Box(this);
+		SAPbox = new Box(this, null);
 		setPos(pos);
 		setVel(vel);
 	}
@@ -20,7 +20,7 @@ public class TestObject {
 	
 	public void setPos(Vector2d pos) {
 		this.pos = pos;
-		SAPbox.update(pos.x, pos.y, CollisionTestMain.collisionDistance*2);
+		SAPbox.update(pos.x, pos.y, CollisionTestMain.collisionDistance);
 	}
 	
 	public Vector2d getVel() {

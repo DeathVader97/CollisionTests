@@ -49,7 +49,7 @@ class CustomComponent extends JComponent{
 				g.drawRect((int)(o.pos.x-rad), (int)(o.pos.y-rad), (int)rad*2, (int)rad*2);
 			}
 		} catch (ConcurrentModificationException e){
-//			paintComponent(g);
+			paintComponent(g);
 		}
 	}
 }

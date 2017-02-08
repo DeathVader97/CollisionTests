@@ -28,11 +28,7 @@ public abstract class CollisionTest {
 	
 	public void printData(long totalTime, long expectedTime){
 		double factor = expectedTime/(double)totalTime;
-//		System.out.println();
-//		System.out.println("Result "+getClass().getSimpleName()+":");
-//		System.out.println("init: "+initTime*factor);
-//		System.out.println("tick: "+(tickTime*factor/ticks));
-		System.out.print(Math.round(ticks*factor*100)/100.0);
+		System.out.print((""+Math.round(ticks*factor*100)/100.0).replace('.', ','));
 		ticks = 0;
 	}
 	
