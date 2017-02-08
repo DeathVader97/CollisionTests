@@ -60,8 +60,7 @@ public class SAPGrid {
 		}
 		if (newSAPs[0] == b.saps[0] && newSAPs[1] == b.saps[1] && newSAPs[2] == b.saps[2] && newSAPs[3] == b.saps[3])
 			return;
-
-//		boolean[] valid = new boolean[]{true,true,true,true};
+		
 		ArrayList<Integer> add = new ArrayList<>();
 		ArrayList<Integer> remove = new ArrayList<>();
 		for (int i = 0 ; i < 4 ; i++){
