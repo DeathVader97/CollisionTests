@@ -14,8 +14,8 @@ public class CollisionTestMain {
 	public static double collisionDistance = 2;
 	public static Vector2d bounds = new Vector2d(1000, 1000);
 	
-	public static long simulationTime = (long)(10*1000000000l);
-	public static int changesPerSecond = 50;
+	public static long simulationTime = (long)(30*1000000000l);
+	public static int changesPerSecond = 0;
 	
 	public static ArrayList<TestObject> objects = new ArrayList<>();
 	static ArrayList<CollisionTest> tests = new ArrayList<>();
@@ -25,8 +25,10 @@ public class CollisionTestMain {
 	public static void main(String[] args) {
 		windowManager.init();
 		addTests();
+		initObjects();
 		for (int i = 1 ; i <= 1 ; i++){
-			totalObjects = i*10000;
+//			TickHelper.setThreadCount(9-i);
+//			simulationTime = i*1*1000000000l;
 //			changesPerSecond = i*20;
 			int testNr = 0;
 			for (CollisionTest test : tests){
@@ -48,9 +50,9 @@ public class CollisionTestMain {
 //		tests.add(new SweepAndPruneTest());
 //		tests.add(new SweepAndPruneGridTest(2, 2));
 //		tests.add(new SweepAndPruneGridTest(5, 5));
-		tests.add(new SweepAndPruneGridTest(10, 10));
+//		tests.add(new SweepAndPruneGridTest(10, 10));
 //		tests.add(new SweepAndPruneGridTest(20, 20));
-//		tests.add(new SweepAndPruneGridTest(40, 40));
+		tests.add(new SweepAndPruneGridTest(40, 40));
 	}
 
 	private static void initObjects() {
@@ -61,7 +63,9 @@ public class CollisionTestMain {
 					new Vector2d(maxSpeed*2*(Math.random()-0.5), maxSpeed*2*(Math.random()-0.5))));
 		}
 	}
-
+	
+	static ArrayList<Double> timings = new ArrayList<>();
+	
 	private static long loop(CollisionTest test) {
 		long t1 = System.nanoTime();
 		long lastTime = 0;
@@ -78,12 +82,19 @@ public class CollisionTestMain {
 			if ((currentTime-t1) > simulationTime){
 
 				System.out.println();
-				System.out.println(updateSAPsTime);
-				System.out.println(updateObjectTime);
+				System.out.println();
+				for (Double time : timings)
+					System.out.println(time);
+				System.out.println();
+				System.out.println();
+//				System.out.println(updateSAPsTime);
+//				System.out.println(updateObjectTime);
 				return currentTime-t1;
 			}
 			if (lastTime == 0){
 				lastTime = currentTime;
+			} else {
+				timings.add(((double)currentTime-lastTime)/1000000);
 			}
 			double deltaT = ((double)currentTime-lastTime)/simulationTime;
 			

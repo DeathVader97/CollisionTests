@@ -4,12 +4,24 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class TickHelper {
 	
-	public static int helperThreadCount = 4;
+	public static int helperThreadCount = Runtime.getRuntime().availableProcessors();
 //	public static int helperThreadCount = 1;
 	public static ExecutorService es = Executors.newFixedThreadPool(helperThreadCount);
+	
+	public static void setThreadCount(int count){
+		try {
+			helperThreadCount = count;
+			es.shutdown();
+			es.awaitTermination(10, TimeUnit.SECONDS);
+			es = Executors.newFixedThreadPool(count);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	public static void moveObjects(double timeFactor){
 		ArrayList<TestObject> objects = CollisionTestMain.objects;
