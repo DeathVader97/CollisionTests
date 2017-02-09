@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 public class TickHelper {
 	
-	public static int helperThreadCount = Runtime.getRuntime().availableProcessors();
-//	public static int helperThreadCount = 1;
+//	public static int helperThreadCount = Runtime.getRuntime().availableProcessors();
+	public static int helperThreadCount = 1;
 	public static ExecutorService es = Executors.newFixedThreadPool(helperThreadCount);
 	
 	public static void setThreadCount(int count){
@@ -24,7 +24,7 @@ public class TickHelper {
 	}
 	
 	public static void moveObjects(double timeFactor){
-		ArrayList<TestObject> objects = CollisionTestMain.objects;
+		ArrayList<DynamicDimentionalObject> objects = CollisionTestMain.updateObjects;
 		CountDownLatch latch = new CountDownLatch(helperThreadCount);
 		int s = objects.size();
 		int chunkSize = s/helperThreadCount;
@@ -65,14 +65,14 @@ public class TickHelper {
 
 class HelperRunnable implements Runnable{
 	
-	ArrayList<TestObject> objects;
+	ArrayList<DynamicDimentionalObject> objects;
 	int l,h;
 	double timeFactor;
 	static double xb = CollisionTestMain.bounds.x;
 	static double yb = CollisionTestMain.bounds.y;
 	CountDownLatch latch;
 	
-	public HelperRunnable(ArrayList<TestObject> objects, int l, int h, double timeFactor, CountDownLatch latch) {
+	public HelperRunnable(ArrayList<DynamicDimentionalObject> objects, int l, int h, double timeFactor, CountDownLatch latch) {
 		this.objects = objects;
 		this.l = l;
 		this.h = h;
@@ -84,7 +84,7 @@ class HelperRunnable implements Runnable{
 	public void run() {
 //		System.out.println("start update task on thread "+Thread.currentThread().getName());
 		for (int i = l ; i < h ; i++){
-			TestObject o = objects.get(i);
+			DynamicDimentionalObject o = objects.get(i);
 			double x = o.getPos().x;
 			double y = o.getPos().y;
 			x += o.getVel().x*timeFactor;

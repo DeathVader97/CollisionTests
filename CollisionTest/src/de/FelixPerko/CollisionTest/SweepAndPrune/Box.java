@@ -1,33 +1,24 @@
 package de.FelixPerko.CollisionTest.SweepAndPrune;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import de.FelixPerko.CollisionTest.TestObject;
+import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
 
-public class Box {
-	private static int ID_COUNTER = 0;
-	public SAPGrid grid;
+public class Box extends EndPointOwner{
 	
-	int id;
 	EndPoint xMin,xMax,yMin,yMax;
-	public ConcurrentHashMap<Integer, Box> collisions = new ConcurrentHashMap<>();
-	public TestObject object;
-
-	public int[] saps;
-	public boolean[] sapsValidity;
+	public ConcurrentHashMap<Integer, EndPointOwner> collisions = new ConcurrentHashMap<>();
+	public DynamicDimentionalObject object;
 	
-	public Box(TestObject object, SAPGrid grid) {
-		id = ID_COUNTER;
-		ID_COUNTER++;
+	public Box(DynamicDimentionalObject object, SAPGrid grid) {
 		this.object = object;
 		this.grid = grid;
 		
-		xMin = new EndPoint(this,0,true);
-		xMax = new EndPoint(this,0,false);
-		yMin = new EndPoint(this,0,true);
-		yMax = new EndPoint(this,0,false);
+		xMin = new EndPoint(this,0,(byte)1);
+		xMax = new EndPoint(this,0,(byte)0);
+		yMin = new EndPoint(this,0,(byte)1);
+		yMax = new EndPoint(this,0,(byte)0);
 	}
 
 	public void update(double x, double y, double boxSizeHalfed) {
@@ -37,5 +28,21 @@ public class Box {
 		yMax.value = (float)(y+boxSizeHalfed);
 		if (grid != null)
 			grid.updatePos(this);
+	}
+
+	@Override
+	public ArrayList<EndPoint> getEndPointsX() {
+		ArrayList<EndPoint> list = new ArrayList<>();
+		list.add(xMin);
+		list.add(xMax);
+		return list;
+	}
+
+	@Override
+	public ArrayList<EndPoint> getEndPointsY() {
+		ArrayList<EndPoint> list = new ArrayList<>();
+		list.add(yMin);
+		list.add(yMax);
+		return list;
 	}
 }

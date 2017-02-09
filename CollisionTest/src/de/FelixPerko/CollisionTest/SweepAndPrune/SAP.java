@@ -7,6 +7,9 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import de.FelixPerko.CollisionTest.Point;
+import de.FelixPerko.CollisionTest.StaticPointObject;
+
 public class SAP {
 	
 	ArrayList<EndPoint> x,y;
@@ -39,18 +42,14 @@ public class SAP {
 		y = new ArrayList<>(capacity);
 	}
 	
-	public synchronized void addObject(Box box) {
-		addListX.add(box.xMin);
-		addListX.add(box.xMax);
-		addListY.add(box.yMin);
-		addListY.add(box.yMax);
+	public synchronized void addObject(EndPointOwner epo) {
+		addListX.addAll(epo.getEndPointsX());
+		addListY.addAll(epo.getEndPointsY());
 	}
 	
-	public synchronized void removeObject(Box box){
-		removeListX.add(box.xMin);
-		removeListX.add(box.xMax);
-		removeListY.add(box.yMin);
-		removeListY.add(box.yMax);
+	public synchronized void removeObject(EndPointOwner epo){
+		removeListX.addAll(epo.getEndPointsX());
+		removeListY.addAll(epo.getEndPointsY());
 	}
 	
 	public void update(){
@@ -64,10 +63,10 @@ public class SAP {
 			Collections.sort(removeListY, comp);
 		}
 		long t2 = System.nanoTime();
-		removeObjects(x, removeListX, true);
-		removeObjects(y, removeListY, false);
 		insertNewObjects(x, addListX, true);
 		insertNewObjects(y, addListY, false);
+		removeObjects(x, removeListX, true);
+		removeObjects(y, removeListY, false);
 		long t3 = System.nanoTime();
 		updateList(x,true);
 		updateList(y,false);
@@ -78,21 +77,35 @@ public class SAP {
 //		System.exit(0);
 	}
 	
-	ArrayList<Box> removeIDs = new ArrayList<>();
-
+	ArrayList<EndPointOwner> removeIDs = new ArrayList<>();
+	public boolean multiSapEnvironment = false;
+	
 	private void removeObjects(ArrayList<EndPoint> list, ArrayList<EndPoint> remove, boolean x) {
 		if (remove.isEmpty())
 			return;
 		int nextIndex = 0;
-		EndPoint nextPoint = remove.get(0);
-		for (int i = 0 ; i < list.size() ; i++){
-			if (list.get(i) == nextPoint){
+		EndPoint nextPoint = remove.get(0); //next point to remove
+		for (int i = 0 ; i < list.size() ; i++){ //iterate main list
+			if (list.get(i) == nextPoint){ //is an object to remove
 				list.remove(i);
-				if (!x && !nextPoint.isMin){
-					Box box = nextPoint.owner;
+				if (!x && nextPoint.status == 1){
+					//remove collision record in other objects if needed
+					Box box = (Box) nextPoint.owner;
 					removeIDs.addAll(box.collisions.values());
-					for (Box b : removeIDs){
-						b.collisions.remove(box.id);
+					for (EndPointOwner epo : removeIDs){
+						if (epo instanceof Box){
+							if (multiSapEnvironment){
+								if (epo instanceof Box){
+									Box b1 = (Box)epo;
+									Box b2 = box;
+									if (!(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value))
+										continue;
+								}
+							}
+							((Box)epo).collisions.remove(box.id);
+							box.collisions.remove(((Box)epo).id);
+						}
+						
 					}
 					removeIDs.clear();
 				}
@@ -109,37 +122,43 @@ public class SAP {
 	private void insertNewObjects(ArrayList<EndPoint> list, ArrayList<EndPoint> add, boolean x) {
 		if (add.isEmpty())
 			return;
-		ArrayList<Box> openBoxes = new ArrayList<>();
+		ArrayList<Box> openBoxes = new ArrayList<>(); //boxes that are open -> collide with inserted objects
 		int nextIndex = 0;
-		float nextValue = add.get(0).value;
+		float nextValue = add.get(0).value; //value of object that needs to get inserted next
 		boolean end = false;
-		for (int i = 0 ; i < list.size() ; i++){
+		for (int i = 0 ; i < list.size() ; i++){ //iterate main list
 			EndPoint p = list.get(i);
-			if (p.value >= nextValue){
-				EndPoint newP = add.get(nextIndex);
-				if (!x){
-					if (newP.isMin)
-						openBoxes.add(newP.owner);
-					else
-						openBoxes.remove(newP.owner);
+			if (p.value >= nextValue){ //found location to add next object
+				EndPoint newP = add.get(nextIndex); //get the object to add
+				if (!x){ //collision needs to be calculated (last axis)
+					if (newP.status == 1) //is a min -> save to open collisions list
+						openBoxes.add((Box)newP.owner);
+					else if (newP.status == 0) //is a max -> remove from open collisions list
+						openBoxes.remove((Box)newP.owner);
 				}
-				list.add(newP);
+				list.add(newP); //add the object
+				//prepare next object
 				nextIndex++;
 				if (nextIndex >= add.size())
 					end = true;
 				else
 					nextValue = add.get(nextIndex).value;
 			}
-			if (!x){
-				Box b1 = list.get(i).owner;
+			if (!x){ //add collision with new objects
+				EndPointOwner epo = list.get(i).owner;
 				for (Box b : openBoxes){
-					if (b == b1)
+					if (b == epo)
 						continue;
-					boolean collides = !(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value);
-					if (collides){
-						if (!b1.collisions.containsKey(b.id)){
-							b1.collisions.put((Integer)b.id, b);
-							b.collisions.put((Integer)b1.id, b1);
+					if (epo instanceof Point){
+						Point point = (Point)epo;
+						if (point.x.value >= b.xMin.value && point.x.value <= b.xMax.value){
+							b.collisions.putIfAbsent(point.id, point);
+						}
+					} else {
+						Box b1 = (Box)epo;
+						if (!(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value)){
+							b1.collisions.putIfAbsent((Integer)b.id, b);
+							b.collisions.putIfAbsent((Integer)b1.id, b1);
 						}
 					}
 				}
@@ -147,25 +166,30 @@ public class SAP {
 			if (end)
 				break;
 		}
-		for (int i = nextIndex ; i < add.size() ; i++){
+		for (int i = nextIndex ; i < add.size() ; i++){ //add remaining objects add the end of the list
 			EndPoint newP = add.get(i);
 			if (!x){
-				if (newP.isMin)
-					openBoxes.add(newP.owner);
-				else
-					openBoxes.remove(newP.owner);
+				if (newP.status == 1)
+					openBoxes.add((Box)newP.owner);
+				else if (newP.status == 0)
+					openBoxes.remove((Box)newP.owner);
 			}
 			list.add(newP);
 			if (!x){
-				Box b1 = list.get(i).owner;
+				EndPointOwner epo = list.get(i).owner;
 				for (Box b : openBoxes){
-					if (b == newP.owner)
+					if (b == epo)
 						continue;
-					boolean collides = !(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value);
-					if (collides){
-						if (!b1.collisions.containsKey(b.id)){
-							b1.collisions.put((Integer)b.id, b);
-							b.collisions.put((Integer)b1.id, b1);
+					if (epo instanceof Point){
+						Point point = (Point)epo;
+						if (point.x.value >= b.xMin.value && point.x.value <= b.xMax.value){
+							b.collisions.putIfAbsent(point.id, point);
+						}
+					} else {
+						Box b1 = (Box)epo;
+						if (!(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value)){
+							b1.collisions.putIfAbsent((Integer)b.id, b);
+							b.collisions.putIfAbsent((Integer)b1.id, b1);
 						}
 					}
 				}
@@ -189,19 +213,51 @@ public class SAP {
 				nr = j;
 				
 				//SWAP LOGIC:
-				if (e.isMin == e2.isMin)
+				if (e.status == e2.status)
 					continue;
-				Box b1 = e.owner;
-				Box b2 = e2.owner;
-				boolean collides = !(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value);
-				if (collides){
-					if (!b1.collisions.containsKey(b2.id)){
-						b1.collisions.put((Integer)b2.id, b2);
-						b2.collisions.put((Integer)b1.id, b1);
+				if (e.owner instanceof Point){
+					Box b = (Box) e2.owner;
+					Point p = (Point) e.owner;
+					if (p.x.value >= b.xMin.value && p.x.value <= b.xMax.value && p.y.value >= b.yMin.value && p.y.value <= b.yMax.value){
+						b.collisions.putIfAbsent(p.id, p);
+					} else {
+						b.collisions.remove(p.id);
 					}
-				} else {
-					e.owner.collisions.remove((Integer)e2.owner.id);
-					e2.owner.collisions.remove((Integer)e.owner.id);
+				}
+				else if (e2.owner instanceof Point){
+					Box b = (Box) e.owner;
+					Point p = (Point) e2.owner;
+					if (p.x.value >= b.xMin.value && p.x.value <= b.xMax.value && p.y.value >= b.yMin.value && p.y.value <= b.yMax.value){
+						b.collisions.putIfAbsent(p.id, p);
+					} else {
+						b.collisions.remove(p.id);
+					}
+				}
+				else {
+					Box b1 = (Box) e.owner;
+					Box b2 = (Box) e2.owner;
+//					ArrayList<Integer> print = new ArrayList<>();
+//					if (b1.xMax.value < b2.xMin.value)
+//						print.add(1);
+//					if (b2.xMax.value < b1.xMin.value)
+//						print.add(2);
+//					if (b1.yMax.value < b2.yMin.value)
+//						print.add(3);
+//					if (b2.yMax.value < b1.yMin.value)
+//						print.add(4);
+////					if (print.size() > 0){
+//						System.out.println();
+//						System.out.print("collision tests: ");
+////					}
+//					for (Integer k : print)
+//						System.out.print(k);
+					if (!(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value)){
+						b1.collisions.putIfAbsent((Integer)b2.id, b2);
+						b2.collisions.putIfAbsent((Integer)b1.id, b1);
+					} else {
+						b1.collisions.remove((Integer)b2.id);
+						b2.collisions.remove((Integer)b1.id);
+					}
 				}
 			}
 		}

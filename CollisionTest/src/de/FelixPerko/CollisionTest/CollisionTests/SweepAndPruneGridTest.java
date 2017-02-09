@@ -2,12 +2,16 @@ package de.FelixPerko.CollisionTest.CollisionTests;
 
 import java.util.ArrayList;
 
+import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
+import de.FelixPerko.CollisionTest.Point;
+import de.FelixPerko.CollisionTest.StaticPointObject;
 import de.FelixPerko.CollisionTest.TestObject;
+import de.FelixPerko.CollisionTest.SweepAndPrune.SAP;
 import de.FelixPerko.CollisionTest.SweepAndPrune.SAPGrid;
 
 public class SweepAndPruneGridTest extends CollisionTest {
 	
-	SAPGrid grid;
+	public SAPGrid grid;
 	int w,h;
 	
 	public SweepAndPruneGridTest(int w, int h) {
@@ -19,10 +23,12 @@ public class SweepAndPruneGridTest extends CollisionTest {
 	protected void onInit(ArrayList<TestObject> objects) {
 		grid = new SAPGrid(w, h, 20000, 1000, 1000);
 		for (TestObject o : objects){
-			o.getBox().grid = grid;
-			o.getBox().saps = new int[]{-1,-1,-1,-1};
-			o.getBox().sapsValidity = new boolean[]{false,false,false,false};
-			grid.updatePos(o.getBox());
+			o.getEndPointOwner().grid = grid;
+			o.getEndPointOwner().saps = new int[]{-1,-1,-1,-1};
+			if (o instanceof StaticPointObject)
+				grid.updatePos((Point)((StaticPointObject) o).getEndPointOwner());
+			else
+				grid.updatePos(((DynamicDimentionalObject) o).getBox());
 		}
 	}
 
@@ -33,16 +39,16 @@ public class SweepAndPruneGridTest extends CollisionTest {
 
 	@Override
 	public void addObject(TestObject newObject) {
-		newObject.getBox().grid = grid;
-		newObject.getBox().saps = new int[]{-1,-1,-1,-1};
-		newObject.getBox().sapsValidity = new boolean[]{false,false,false,false};
+		newObject.getEndPointOwner().grid = grid;
+		newObject.getEndPointOwner().saps = new int[]{-1,-1,-1,-1};
 	}
 
 	@Override
 	public void removeObject(TestObject removeObject) {
-		for (int i = 0 ; i < 4 ; i++){
-			if (removeObject.getBox().sapsValidity[i]){
-				grid.saps[removeObject.getBox().saps[i]].removeObject(removeObject.getBox());
+		int[] removeObjectSaps = removeObject.getEndPointOwner().saps;
+		for (int i = 0 ; i < removeObjectSaps.length ; i++){
+			if (removeObjectSaps[i] != -1){
+				grid.saps[removeObjectSaps[i]].removeObject(removeObject.getEndPointOwner());
 			}
 		}
 	}

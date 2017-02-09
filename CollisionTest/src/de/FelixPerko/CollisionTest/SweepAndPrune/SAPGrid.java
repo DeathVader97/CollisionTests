@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import de.FelixPerko.CollisionTest.Point;
 import de.FelixPerko.CollisionTest.TickHelper;
 
 public class SAPGrid {
@@ -22,8 +23,10 @@ public class SAPGrid {
 		this.factorX = worldW/gridW;
 		this.factorY = worldH/gridW;
 		this.saps = new SAP[gridW*gridH];
-		for (int i = 0 ; i < saps.length ; i++)
+		for (int i = 0 ; i < saps.length ; i++){
 			saps[i] = new SAP(initialCapacity);
+			saps[i].multiSapEnvironment = true;
+		}
 	}
 	
 	boolean test = true;
@@ -144,6 +147,35 @@ public class SAPGrid {
 //		for (int i = 0 ; i < saps.length ; i++){
 //			saps[i].update();
 //		}
+	}
+
+	public void updatePos(Point point) {
+		int n = (int)(point.x.value/factorX)+(int)(point.y.value/factorY)*w;
+		if (n == point.saps[0])
+			return;
+		else {
+			if (n != -1)
+				saps[n].addObject(point);
+			if (point.saps[0] != -1)
+				saps[point.saps[0]].removeObject(point);
+		}
+		point.saps[0] = n;
+	}
+	
+	public int[] findBordersX(){
+		int[] res = new int[w];
+		for (int i = 0 ; i < w ; i++){
+			res[i] = (int)(i*factorX);
+		}
+		return res;
+	}
+	
+	public int[] findBordersY(){
+		int[] res = new int[h];
+		for (int i = 0 ; i < h ; i++){
+			res[i] = (int)(i*factorY);
+		}
+		return res;
 	}
 }
 

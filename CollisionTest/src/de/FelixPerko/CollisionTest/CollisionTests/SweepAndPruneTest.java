@@ -1,7 +1,10 @@
 package de.FelixPerko.CollisionTest.CollisionTests;
 
+import java.sql.Savepoint;
 import java.util.ArrayList;
+import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
 import de.FelixPerko.CollisionTest.TestObject;
+import de.FelixPerko.CollisionTest.SweepAndPrune.EndPointOwner;
 import de.FelixPerko.CollisionTest.SweepAndPrune.SAP;
 
 public class SweepAndPruneTest extends CollisionTest {
@@ -15,7 +18,7 @@ public class SweepAndPruneTest extends CollisionTest {
 //		System.out.println("SAP init");
 		sapInstance = new SAP(objects.size());
 		for (TestObject o : objects){
-			sapInstance.addObject(o.getBox());
+			sapInstance.addObject(o.getEndPointOwner());
 		}
 		sapInstance.update();
 //		System.out.println("finish init");
@@ -29,12 +32,12 @@ public class SweepAndPruneTest extends CollisionTest {
 
 	@Override
 	public void addObject(TestObject newObject) {
-		sapInstance.addObject(newObject.getBox());
+		sapInstance.addObject(newObject.getEndPointOwner());
 	}
 
 	@Override
 	public void removeObject(TestObject removeObject) {
-		sapInstance.removeObject(removeObject.getBox());
+		sapInstance.removeObject(removeObject.getEndPointOwner());
 	}
 
 }

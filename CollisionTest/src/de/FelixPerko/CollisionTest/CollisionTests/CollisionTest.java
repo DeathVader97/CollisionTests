@@ -3,6 +3,7 @@ package de.FelixPerko.CollisionTest.CollisionTests;
 import java.util.ArrayList;
 
 import de.FelixPerko.CollisionTest.CollisionTestMain;
+import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
 import de.FelixPerko.CollisionTest.TestObject;
 
 public abstract class CollisionTest {

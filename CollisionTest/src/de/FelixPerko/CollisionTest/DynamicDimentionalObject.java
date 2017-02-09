@@ -1,14 +1,14 @@
 package de.FelixPerko.CollisionTest;
 
 import de.FelixPerko.CollisionTest.SweepAndPrune.Box;
+import de.FelixPerko.CollisionTest.SweepAndPrune.EndPointOwner;
 
-public class TestObject {
-	Vector2d pos;
+public class DynamicDimentionalObject extends TestObject{
 	Vector2d vel;
 	
 	public Box SAPbox;
 	
-	public TestObject(Vector2d pos, Vector2d vel) {
+	public DynamicDimentionalObject(Vector2d pos, Vector2d vel) {
 		SAPbox = new Box(this, null);
 		setPos(pos);
 		setVel(vel);
@@ -32,6 +32,11 @@ public class TestObject {
 	}
 
 	public Box getBox() {
+		return SAPbox;
+	}
+
+	@Override
+	public EndPointOwner getEndPointOwner() {
 		return SAPbox;
 	}
 }
