@@ -58,7 +58,7 @@ public class SAP {
 			Collections.sort(addListX, comp);
 			Collections.sort(addListY, comp);
 		}
-		if (!addListY.isEmpty()){
+		if (!removeListY.isEmpty()){
 			Collections.sort(removeListX, comp);
 			Collections.sort(removeListY, comp);
 		}
@@ -94,7 +94,7 @@ public class SAP {
 					removeIDs.addAll(box.collisions.values());
 					for (EndPointOwner epo : removeIDs){
 						if (epo instanceof Box){
-							if (multiSapEnvironment){
+							if (multiSapEnvironment && !box.removed){
 								if (epo instanceof Box){
 									Box b1 = (Box)epo;
 									Box b2 = box;
@@ -115,6 +115,9 @@ public class SAP {
 				nextPoint = remove.get(nextIndex);
 				i--;
 			}
+		}
+		if (nextIndex < remove.size()){
+			list.removeAll(remove.subList(nextIndex, remove.size()));
 		}
 		remove.clear();
 	}

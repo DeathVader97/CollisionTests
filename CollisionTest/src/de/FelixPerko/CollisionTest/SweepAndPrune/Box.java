@@ -10,6 +10,7 @@ public class Box extends EndPointOwner{
 	EndPoint xMin,xMax,yMin,yMax;
 	public ConcurrentHashMap<Integer, EndPointOwner> collisions = new ConcurrentHashMap<>();
 	public DynamicDimentionalObject object;
+	public boolean removed = false; //marked for removal
 	
 	public Box(DynamicDimentionalObject object, SAPGrid grid) {
 		this.object = object;

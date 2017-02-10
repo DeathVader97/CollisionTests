@@ -3,7 +3,9 @@ package de.FelixPerko.CollisionTest.CollisionTests;
 import java.sql.Savepoint;
 import java.util.ArrayList;
 import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
+import de.FelixPerko.CollisionTest.StaticPointObject;
 import de.FelixPerko.CollisionTest.TestObject;
+import de.FelixPerko.CollisionTest.SweepAndPrune.Box;
 import de.FelixPerko.CollisionTest.SweepAndPrune.EndPointOwner;
 import de.FelixPerko.CollisionTest.SweepAndPrune.SAP;
 
@@ -37,6 +39,8 @@ public class SweepAndPruneTest extends CollisionTest {
 
 	@Override
 	public void removeObject(TestObject removeObject) {
+		if (removeObject instanceof DynamicDimentionalObject)
+			((Box)removeObject.getEndPointOwner()).removed = true;
 		sapInstance.removeObject(removeObject.getEndPointOwner());
 	}
 

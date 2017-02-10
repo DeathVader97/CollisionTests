@@ -17,9 +17,9 @@ public class BruteForceTest extends CollisionTest {
 	protected void onTick(ArrayList<TestObject> objects) {
 		double collisionDistance = CollisionTestMain.collisionDistance;
 		double collisionDistanceSq = collisionDistance*collisionDistance;
-		for (int i = 0 ; i < objects.size() ; i++){
-			for (int j = i+1 ; j < objects.size() ; j++){
-				TestObject o1 = objects.get(i);
+		for (int i = 0 ; i < CollisionTestMain.updateObjects.size() ; i++){
+			for (int j = 0 ; j < objects.size() ; j++){
+				TestObject o1 = CollisionTestMain.updateObjects.get(i);
 				TestObject o2 = objects.get(j);
 				boolean collide = o1.getPos().distSq(o2.getPos()) < collisionDistanceSq;
 			}

@@ -3,6 +3,7 @@ package de.FelixPerko.CollisionTest;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 
 import javax.swing.JComponent;
@@ -16,7 +17,11 @@ public class WindowManager {
 	
 	JFrame frame;
 	CustomComponent c;
-	boolean disabled = false;
+	boolean disabled;
+	
+	public WindowManager(boolean enabled){
+		this.disabled = !enabled;
+	}
 	
 	public void init() {
 		if (disabled)
@@ -43,32 +48,34 @@ class CustomComponent extends JComponent{
 	@Override
 	protected void paintComponent(Graphics g) {
 		double rad = CollisionTestMain.collisionDistance;
-		try{
 			CollisionTest test = CollisionTestMain.currentTest;
 			if (test != null && test instanceof SweepAndPruneGridTest){
 				g.setColor(Color.GRAY);
 				SweepAndPruneGridTest sapgt = (SweepAndPruneGridTest) test;
-				for (int x : sapgt.grid.findBordersX()){
-					g.drawLine(x, 0, x, (int)CollisionTestMain.bounds.y);
-				}
-				for (int y : sapgt.grid.findBordersY()){
-					g.drawLine(0, y, (int)CollisionTestMain.bounds.x, y);
-				}
-			}
-			for (TestObject o : CollisionTestMain.objects){
-				if (o instanceof StaticPointObject){
-					g.setColor(Color.GREEN);
-					g.drawRect((int)(o.pos.x), (int)(o.pos.y), 1, 1);;
-				} else {
-					if (((DynamicDimentionalObject)o).SAPbox.collisions.isEmpty())
-						g.setColor(Color.BLACK);
-					else
-						g.setColor(Color.RED);
-					g.drawRect((int)(o.pos.x-rad), (int)(o.pos.y-rad), (int)rad*2, (int)rad*2);
+				if (sapgt.grid != null){
+					for (int x : sapgt.grid.findBordersX()){
+						g.drawLine(x, 0, x, (int)CollisionTestMain.bounds.y);
+					}
+					for (int y : sapgt.grid.findBordersY()){
+						g.drawLine(0, y, (int)CollisionTestMain.bounds.x, y);
+					}
 				}
 			}
-		} catch (ConcurrentModificationException|NullPointerException e){
-			paintComponent(g);
-		}
+			for (TestObject o : new ArrayList<TestObject>(CollisionTestMain.objects)){
+				try{
+					if (o instanceof StaticPointObject){
+						g.setColor(Color.GREEN);
+						g.drawRect((int)(o.pos.x), (int)(o.pos.y), 1, 1);;
+					} else {
+						if (((DynamicDimentionalObject)o).SAPbox.collisions.isEmpty())
+							g.setColor(Color.BLACK);
+						else
+							g.setColor(Color.RED);
+						g.drawRect((int)(o.pos.x-rad), (int)(o.pos.y-rad), (int)rad*2, (int)rad*2);
+					}
+				} catch (ConcurrentModificationException|NullPointerException e){
+					paintComponent(g);
+				}
+			}
 	}
 }

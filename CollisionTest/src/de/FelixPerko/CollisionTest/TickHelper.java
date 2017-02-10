@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 public class TickHelper {
 	
-//	public static int helperThreadCount = Runtime.getRuntime().availableProcessors();
-	public static int helperThreadCount = 1;
+	public static int helperThreadCount = Runtime.getRuntime().availableProcessors();
+//	public static int helperThreadCount = 1;
 	public static ExecutorService es = Executors.newFixedThreadPool(helperThreadCount);
 	
 	public static void setThreadCount(int count){

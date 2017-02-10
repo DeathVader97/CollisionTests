@@ -6,8 +6,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 import de.FelixPerko.CollisionTest.Point;
 import de.FelixPerko.CollisionTest.TickHelper;
 
@@ -30,6 +28,7 @@ public class SAPGrid {
 	}
 	
 	boolean test = true;
+	
 	
 	public void updatePos(Box b){
 		long t1 = System.nanoTime();
@@ -64,48 +63,48 @@ public class SAPGrid {
 		if (newSAPs[0] == b.saps[0] && newSAPs[1] == b.saps[1] && newSAPs[2] == b.saps[2] && newSAPs[3] == b.saps[3])
 			return;
 		
-		ArrayList<Integer> add = new ArrayList<>();
-		ArrayList<Integer> remove = new ArrayList<>();
+		ArrayList<Integer> added = new ArrayList<>();
+		ArrayList<Integer> removed = new ArrayList<>();
 		for (int i = 0 ; i < 4 ; i++){
-			if (newSAPs[i] != b.saps[i]){
+			if (b.saps[i] != newSAPs[i]){
 				if (newSAPs[i] != -1){
-					boolean contains = false;
-					for (int j = 0 ; j < i ; j++){
-						if (newSAPs[j] == newSAPs[i]){
-							contains = true;
-							break;
-						}
-					}
-					if (!contains){
-						addToList(add, newSAPs[i]);
+					int val = newSAPs[i];
+					if (!added.contains(val) && !contains(b.saps, val)){
+						saps[val].addObject(b);
+						added.add(val);
 					}
 				}
 				if (b.saps[i] != -1){
-					addToList(remove, b.saps[i]);
+					int val = b.saps[i];
+					if (!removed.contains(val) && !contains(newSAPs, val)){
+						saps[val].removeObject(b);
+						removed.add(val);
+					}
 				}
-			}
-		}
-		if (add.isEmpty() && remove.isEmpty()){
-			return;
-		}
-		for (int i = 0 ; i < add.size() ; i++){
-			int nr = add.get(i);
-			if (!IntStream.of(b.saps).anyMatch(x -> x == nr)){
-				saps[nr].addObject(b);
-			} else {
-				add.remove((Integer)nr);
-			}
-		}
-		for (int i : remove){
-			if (!add.stream().anyMatch(x -> x == i)){
-				saps[i].removeObject(b);
 			}
 		}
 		b.saps = newSAPs;
 	}
+
+	public void updatePos(Point point) {
+		int n = (int)(point.x.value/factorX)+(int)(point.y.value/factorY)*w;
+		if (n == point.saps[0])
+			return;
+		else {
+			if (n != -1)
+				saps[n].addObject(point);
+			if (point.saps[0] != -1)
+				saps[point.saps[0]].removeObject(point);
+		}
+		point.saps[0] = n;
+	}
 	
-	private synchronized <T> void addToList(ArrayList<T> list, T object){
-		list.add(object);
+	private boolean contains(int[] arr, int value){
+		for (int i = 0 ; i < arr.length ; i++){
+			if (arr[i] == value)
+				return true;
+		}
+		return false;
 	}
 	
 	int last = 0;
@@ -119,6 +118,13 @@ public class SAPGrid {
 	}
 	
 	public void tick() {
+//		int totalObjects = 0;
+//		for (SAP sap : saps){
+//			totalObjects += sap.x.size();
+//		}
+//		System.out.println(totalObjects);
+		
+		
 		CountDownLatch latch = new CountDownLatch(threadCount);
 		
 		int s = saps.length;
@@ -138,28 +144,9 @@ public class SAPGrid {
 		
 		try {
 			latch.await();
-//			System.out.println("latch unlocked");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-//		System.out.println("-");
-		
-//		for (int i = 0 ; i < saps.length ; i++){
-//			saps[i].update();
-//		}
-	}
-
-	public void updatePos(Point point) {
-		int n = (int)(point.x.value/factorX)+(int)(point.y.value/factorY)*w;
-		if (n == point.saps[0])
-			return;
-		else {
-			if (n != -1)
-				saps[n].addObject(point);
-			if (point.saps[0] != -1)
-				saps[point.saps[0]].removeObject(point);
-		}
-		point.saps[0] = n;
 	}
 	
 	public int[] findBordersX(){
@@ -195,20 +182,8 @@ class HelperRunnable implements Runnable{
 	
 	@Override
 	public void run() {
-		long t1 = System.nanoTime();
-//		System.out.println("start collision task on thread "+Thread.currentThread().getName());
-//		long t1 = System.nanoTime();
 		for (int i = l ; i < h ; i++)	
 			sap[i].update();
-//			System.out.println(Thread.currentThread().getName()+" updated "+next);
-//		}
-		long t2 = System.nanoTime();
-//		System.out.println((t2-t1));
 		latch.countDown();
 	}
-	
-
-//	long t2 = System.nanoTime();
-//	System.out.println("end collision task on thread "+Thread.currentThread().getName());
-//	System.out.println(Thread.currentThread().getName()+" "+(t2-t1));
 }

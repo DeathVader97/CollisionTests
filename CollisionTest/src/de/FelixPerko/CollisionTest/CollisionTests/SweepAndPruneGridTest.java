@@ -6,6 +6,7 @@ import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
 import de.FelixPerko.CollisionTest.Point;
 import de.FelixPerko.CollisionTest.StaticPointObject;
 import de.FelixPerko.CollisionTest.TestObject;
+import de.FelixPerko.CollisionTest.SweepAndPrune.Box;
 import de.FelixPerko.CollisionTest.SweepAndPrune.SAP;
 import de.FelixPerko.CollisionTest.SweepAndPrune.SAPGrid;
 
@@ -45,6 +46,8 @@ public class SweepAndPruneGridTest extends CollisionTest {
 
 	@Override
 	public void removeObject(TestObject removeObject) {
+		if (removeObject instanceof DynamicDimentionalObject)
+			((Box)removeObject.getEndPointOwner()).removed = true;
 		int[] removeObjectSaps = removeObject.getEndPointOwner().saps;
 		for (int i = 0 ; i < removeObjectSaps.length ; i++){
 			if (removeObjectSaps[i] != -1){

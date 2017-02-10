@@ -19,12 +19,14 @@ public abstract class CollisionTest {
 		initTime = t2-t1;
 	}
 	
-	public void tick(){
+	public void tick(boolean countTick){
 		long t1 = System.nanoTime();
 		onTick(CollisionTestMain.objects);
 		long t2 = System.nanoTime();
-		tickTime = t2-t1;
-		ticks++;
+		if (countTick){
+			tickTime = t2-t1;
+			ticks++;
+		}
 	}
 	
 	public void printData(long totalTime, long expectedTime){
