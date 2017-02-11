@@ -11,7 +11,7 @@ public class CollisionTestMain {
 	
 	public static int totalDynamicObjects = 5000;
 	public static int totalStaticObjects = 50000;
-	public static double maxSpeed = 200;
+	public static double maxSpeed = 10;
 	public static double collisionDistance = 2;
 	public static Vector2d bounds = new Vector2d(1000, 1000);
 	
@@ -26,7 +26,7 @@ public class CollisionTestMain {
 	public static ArrayList<DynamicDimentionalObject> updateObjects = new ArrayList<>();
 	static ArrayList<CollisionTest> tests = new ArrayList<>();
 	
-	private static WindowManager windowManager = new WindowManager(false);
+	private static WindowManager windowManager = new WindowManager(true);
 	
 	public static void main(String[] args) {
 		windowManager.init();
