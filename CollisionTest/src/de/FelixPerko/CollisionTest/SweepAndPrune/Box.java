@@ -1,6 +1,5 @@
 package de.FelixPerko.CollisionTest.SweepAndPrune;
 
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
@@ -29,21 +28,5 @@ public class Box extends EndPointOwner{
 		yMax.value = (float)(y+boxSizeHalfed);
 		if (grid != null)
 			grid.updatePos(this);
-	}
-
-	@Override
-	public ArrayList<EndPoint> getEndPointsX() {
-		ArrayList<EndPoint> list = new ArrayList<>();
-		list.add(xMin);
-		list.add(xMax);
-		return list;
-	}
-
-	@Override
-	public ArrayList<EndPoint> getEndPointsY() {
-		ArrayList<EndPoint> list = new ArrayList<>();
-		list.add(yMin);
-		list.add(yMax);
-		return list;
 	}
 }

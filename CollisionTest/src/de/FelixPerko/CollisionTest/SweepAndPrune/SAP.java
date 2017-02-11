@@ -3,12 +3,7 @@ package de.FelixPerko.CollisionTest.SweepAndPrune;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.ConcurrentModificationException;
 import java.util.HashMap;
-import java.util.Map.Entry;
-
-import de.FelixPerko.CollisionTest.Point;
-import de.FelixPerko.CollisionTest.StaticPointObject;
 
 public class SAP {
 	
@@ -43,13 +38,31 @@ public class SAP {
 	}
 	
 	public synchronized void addObject(EndPointOwner epo) {
-		addListX.addAll(epo.getEndPointsX());
-		addListY.addAll(epo.getEndPointsY());
+		if (epo instanceof Point){
+			Point p = (Point)epo;
+			addListX.add(p.x);
+			addListY.add(p.y);
+		} else {
+			Box b = (Box)epo;
+			addListX.add(b.xMin);
+			addListX.add(b.xMax);
+			addListY.add(b.yMin);
+			addListY.add(b.yMax);
+		}
 	}
 	
 	public synchronized void removeObject(EndPointOwner epo){
-		removeListX.addAll(epo.getEndPointsX());
-		removeListY.addAll(epo.getEndPointsY());
+		if (epo instanceof Point){
+			Point p = (Point)epo;
+			removeListX.add(p.x);
+			removeListY.add(p.y);
+		} else {
+			Box b = (Box)epo;
+			removeListX.add(b.xMin);
+			removeListX.add(b.xMax);
+			removeListY.add(b.yMin);
+			removeListY.add(b.yMax);
+		}
 	}
 	
 	public void update(){
