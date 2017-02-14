@@ -1,5 +1,6 @@
 package de.FelixPerko.CollisionTest.SweepAndPrune;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -123,30 +124,29 @@ public class SAPGrid {
 //			totalObjects += sap.x.size();
 //		}
 //		System.out.println(totalObjects);
-		
-		
-		CountDownLatch latch = new CountDownLatch(threadCount);
-		
-		int s = saps.length;
-		int blockSize = s/(threadCount);
-		
-		HelperRunnable.sap = saps;
-		HelperRunnable.latch = latch;
-		for (int i = 0 ; i < threadCount-1 ; i++){
-			HelperRunnable run = runnables[i];
-			run.setLoad(i*blockSize, (i+1)*blockSize);
-			es.execute(run);
-		}
-		HelperRunnable run = runnables[runnables.length-1];
-		run.setLoad((threadCount-1)*blockSize, s);
-		es.execute(run);
-		
-		
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		Arrays.stream(saps).forEach(s -> s.update());
+//		CountDownLatch latch = new CountDownLatch(threadCount);
+//		
+//		int s = saps.length;
+//		int blockSize = s/(threadCount);
+//		
+//		HelperRunnable.sap = saps;
+//		HelperRunnable.latch = latch;
+//		for (int i = 0 ; i < threadCount-1 ; i++){
+//			HelperRunnable run = runnables[i];
+//			run.setLoad(i*blockSize, (i+1)*blockSize);
+//			es.execute(run);
+//		}
+//		HelperRunnable run = runnables[runnables.length-1];
+//		run.setLoad((threadCount-1)*blockSize, s);
+//		es.execute(run);
+//		
+//		
+//		try {
+//			latch.await();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	public int[] findBordersX(){

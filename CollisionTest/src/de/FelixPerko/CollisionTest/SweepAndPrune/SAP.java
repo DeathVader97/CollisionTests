@@ -71,9 +71,11 @@ public class SAP {
 		updateList(x,true);
 		updateList(y,false);
 		long t4 = System.nanoTime();
-		double tg = t4-t1;
-//		System.out.println("total time: "+((t4-t1)+" for "+x.size()));
-//		System.out.println((t2-t1)/tg+", "+(t3-t2)/tg+", "+(t4-t3)/tg);
+//		double tg = t4-t1;
+//		if (((t4-t1)/100000)/10.0 > 30){
+//			System.out.println("total time: "+(((t4-t1)/100000)/10.0+" for "+x.size()));
+//			System.out.println((t2-t1)/tg+", "+(t3-t2)/tg+", "+(t4-t3)/tg);
+//		}
 //		System.exit(0);
 	}
 	
@@ -202,10 +204,18 @@ public class SAP {
 	}
 
 	public void updateList(ArrayList<EndPoint> list, boolean isXAxis){
+		if (list.isEmpty())
+			return;
 		int size = list.size();
+		float lastValue = list.get(0).value;
 		for (int i = 1 ; i < size ; i++){
+			long t1 = System.nanoTime();
 			EndPoint e = list.get(i);
 			float value = e.value;
+			if (lastValue <= value){
+				lastValue = value;
+				continue;
+			}
 			int nr = i;
 			for (int j = i-1 ; j >= 0 ; j--){
 				EndPoint e2 = list.get(j);
@@ -214,7 +224,10 @@ public class SAP {
 				list.set(nr, e2);
 				list.set(j, e);
 				nr = j;
-				
+
+				long tt1 = System.nanoTime();
+				long tt2 = 0;
+				int config = 0;
 				//SWAP LOGIC:
 				if (e.status == e2.status)
 					continue;
@@ -222,47 +235,66 @@ public class SAP {
 					Box b = (Box) e2.owner;
 					Point p = (Point) e.owner;
 					if (p.x.value >= b.xMin.value && p.x.value <= b.xMax.value && p.y.value >= b.yMin.value && p.y.value <= b.yMax.value){
-						b.collisions.putIfAbsent(p.id, p);
+						tt2 = System.nanoTime();
+						if (!b.collisions.containsKey(p.id))
+							b.collisions.putIfAbsent(p.id, p);
 					} else {
-						b.collisions.remove(p.id);
+						config = 1;
+						tt2 = System.nanoTime();
+						if (b.collisions.containsKey(p.id)){
+							b.collisions.remove(p.id);
+						}
 					}
 				}
 				else if (e2.owner instanceof Point){
 					Box b = (Box) e.owner;
 					Point p = (Point) e2.owner;
 					if (p.x.value >= b.xMin.value && p.x.value <= b.xMax.value && p.y.value >= b.yMin.value && p.y.value <= b.yMax.value){
-						b.collisions.putIfAbsent(p.id, p);
+						config = 2;
+						tt2 = System.nanoTime();
+						if (!b.collisions.containsKey(p.id))
+							b.collisions.putIfAbsent((Integer)p.id, p);
 					} else {
-						b.collisions.remove(p.id);
+						config = 3;
+						tt2 = System.nanoTime();
+						if (b.collisions.containsKey(p.id)){
+							b.collisions.remove((Integer)p.id);
+						}
 					}
 				}
 				else {
 					Box b1 = (Box) e.owner;
 					Box b2 = (Box) e2.owner;
-//					ArrayList<Integer> print = new ArrayList<>();
-//					if (b1.xMax.value < b2.xMin.value)
-//						print.add(1);
-//					if (b2.xMax.value < b1.xMin.value)
-//						print.add(2);
-//					if (b1.yMax.value < b2.yMin.value)
-//						print.add(3);
-//					if (b2.yMax.value < b1.yMin.value)
-//						print.add(4);
-////					if (print.size() > 0){
-//						System.out.println();
-//						System.out.print("collision tests: ");
-////					}
-//					for (Integer k : print)
-//						System.out.print(k);
 					if (!(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value)){
-						b1.collisions.putIfAbsent((Integer)b2.id, b2);
-						b2.collisions.putIfAbsent((Integer)b1.id, b1);
+						config = 4;
+						tt2 = System.nanoTime();
+						if (!b1.collisions.containsKey(b2.id)){
+							b1.collisions.putIfAbsent((Integer)b2.id, b2);
+							b2.collisions.putIfAbsent((Integer)b1.id, b1);
+						}
 					} else {
-						b1.collisions.remove((Integer)b2.id);
-						b2.collisions.remove((Integer)b1.id);
+						config = 5;
+						tt2 = System.nanoTime();
+						if (b1.collisions.containsKey(b2.id)){
+							b1.collisions.remove((Integer)b2.id);
+							b2.collisions.remove((Integer)b1.id);
+						}
 					}
 				}
+				long tt3 = System.nanoTime();
+				if (tt3-tt1 > 50000000){
+					System.out.println(config);
+					if (config == 3)
+						System.out.println("objects: "+((Box)e.owner).collisions.size());
+					System.out.println((tt2-tt1)+", "+(tt3-tt2));
+				}
 			}
+			lastValue = value;
+//			timings.add((int) (System.nanoTime()-t1));
 		}
+//		if (System.nanoTime() - beginTime > 50000000)
+//			for (int time : timings)
+//				if (time > 100000)
+//					System.out.println(time);
 	}
 }
