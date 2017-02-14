@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
+
 import de.FelixPerko.CollisionTest.Point;
 import de.FelixPerko.CollisionTest.TickHelper;
 
@@ -119,34 +119,7 @@ public class SAPGrid {
 	}
 	
 	public void tick() {
-//		int totalObjects = 0;
-//		for (SAP sap : saps){
-//			totalObjects += sap.x.size();
-//		}
-//		System.out.println(totalObjects);
 		Arrays.stream(saps).forEach(s -> s.update());
-//		CountDownLatch latch = new CountDownLatch(threadCount);
-//		
-//		int s = saps.length;
-//		int blockSize = s/(threadCount);
-//		
-//		HelperRunnable.sap = saps;
-//		HelperRunnable.latch = latch;
-//		for (int i = 0 ; i < threadCount-1 ; i++){
-//			HelperRunnable run = runnables[i];
-//			run.setLoad(i*blockSize, (i+1)*blockSize);
-//			es.execute(run);
-//		}
-//		HelperRunnable run = runnables[runnables.length-1];
-//		run.setLoad((threadCount-1)*blockSize, s);
-//		es.execute(run);
-//		
-//		
-//		try {
-//			latch.await();
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
 	}
 	
 	public int[] findBordersX(){
