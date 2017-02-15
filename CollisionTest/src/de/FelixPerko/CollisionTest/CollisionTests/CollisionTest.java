@@ -37,6 +37,7 @@ public abstract class CollisionTest {
 	
 	protected abstract void onInit(ArrayList<TestObject> objects);
 	protected abstract void onTick(ArrayList<TestObject> objects);
+	
 	public abstract void addObject(TestObject newObject);
 	public abstract void removeObject(TestObject removeObject);
 }

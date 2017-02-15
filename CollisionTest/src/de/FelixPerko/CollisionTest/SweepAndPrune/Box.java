@@ -2,13 +2,14 @@ package de.FelixPerko.CollisionTest.SweepAndPrune;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
 
 public class Box extends EndPointOwner{
 	
 	EndPoint xMin,xMax,yMin,yMax;
-	public HashMap<Integer, EndPointOwner> collisions = new HashMap<>();
+	public ConcurrentHashMap<Integer, EndPointOwner> collisions = new ConcurrentHashMap<>();
 	public DynamicDimentionalObject object;
 	public boolean removed = false; //marked for removal
 	

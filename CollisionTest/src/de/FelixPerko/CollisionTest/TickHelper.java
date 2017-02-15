@@ -42,7 +42,9 @@ public class TickHelper {
 		double yb = CollisionTestMain.bounds.y;
 		CollisionTestMain.updateObjects.parallelStream().forEach(e -> updateObject(e, timeFactor, xb, yb));
 	}
-
+	
+	static Vector2d helpVector1 = new Vector2d(-1,1);
+	static Vector2d helpVector2 = new Vector2d(1,-1);
 	private static void updateObject(DynamicDimentionalObject o, double timeFactor, double xb, double yb) {
 		double x = o.getPos().x;
 		double y = o.getPos().y;
@@ -51,20 +53,26 @@ public class TickHelper {
 		
 		if (x < 0){
 			x = 0;
-			o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
+			o.getVel().multed(helpVector1);
+//			o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
 		} else if (x > xb){
 			x = xb;
-			o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
+			o.getVel().multed(helpVector1);
+//			o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
 		}
 		if (y < 0){
 			y = 0;
-			o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
+			o.getVel().multed(helpVector2);
+//			o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
 		} else if (y > yb){
 			y = yb;
-			o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
+			o.getVel().multed(helpVector2);
+//			o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
 		}
 		
-		o.setPos(new Vector2d(x, y));
+		o.pos.x = x;
+		o.pos.y = y;
+		o.positionUpdated();
 	}
 }
 
