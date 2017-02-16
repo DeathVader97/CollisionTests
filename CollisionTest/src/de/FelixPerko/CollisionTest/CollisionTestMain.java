@@ -2,6 +2,7 @@ package de.FelixPerko.CollisionTest;
 
 import java.util.ArrayList;
 
+import de.FelixPerko.CollisionTest.CollisionTests.BruteForceTest;
 import de.FelixPerko.CollisionTest.CollisionTests.CollisionTest;
 import de.FelixPerko.CollisionTest.CollisionTests.SweepAndPruneGridTest;
 import de.FelixPerko.CollisionTest.CollisionTests.SweepAndPruneTest;
@@ -15,8 +16,8 @@ public class CollisionTestMain {
 	private static WindowManager windowManager = new WindowManager(false);
 	public static long sekToNs = 1000000000L;
 	
-	public static int totalDynamicObjects = 5000;
-	public static int totalStaticObjects = 50000;
+	public static int totalDynamicObjects = 10000;
+	public static int totalStaticObjects = 100000;
 	public static double maxSpeed = 100;
 	public static double collisionDistance = 2; //the minimal collision distance, half of the AABB width/height
 	public static int changesPerSecond = 0; //insertions and deletions that will be performed every second
@@ -64,7 +65,7 @@ public class CollisionTestMain {
 //		tests.add(new SweepAndPruneGridTest(5, 5));
 		tests.add(new SweepAndPruneGridTest(10, 10));
 //		tests.add(new SweepAndPruneGridTest(20, 20));
-//		tests.add(new SweepAndPruneGridTest(40, 40));
+		tests.add(new SweepAndPruneGridTest(40, 40));
 	}
 
 	private static void initObjects() {
@@ -131,20 +132,20 @@ public class CollisionTestMain {
 		}
 		
 		//time is over, finish test
-		long median = 0;
+		long average = 0;
 		long max = 0;
 		for (int i = ticktimes.size()-1 ; i >= 0 ; i--){
 			long v = ticktimes.get(i);
-			median += v;
+			average += v;
 			if (v > max)
 				max = v;
 		}
-		median /= ticktimes.size();
+		average /= ticktimes.size();
 		for (int i = ticktimes.size()-1 ; i >= 0 ; i--){
 			System.out.println(ticktimes.get(i));
 		}
-		System.out.println("median: "+nsToMs(median,3)+"ms");
-		System.out.println("max: "+nsToMs(max,3)+"ms ("+max*100/median+"%)");
+		System.out.println("average: "+nsToMs(average,3)+"ms");
+		System.out.println("max: "+nsToMs(max,3)+"ms ("+max*100/average+"%)");
 		
 		return currentTime-startTime-warmup;
 	}
