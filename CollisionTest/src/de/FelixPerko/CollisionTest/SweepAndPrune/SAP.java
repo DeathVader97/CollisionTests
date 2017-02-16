@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import de.FelixPerko.CollisionTest.Point;
+
 public class SAP {
 	
 	ArrayList<EndPoint> x,y;
@@ -24,13 +26,6 @@ public class SAP {
 			return 0;
 		}
 	};
-	
-	/*
-	 * intersection byte:
-	 * index 0 = intersects x
-	 * index 1 = intersects y
-	 */
-	
 	
 	public SAP(int capacity){
 		x = new ArrayList<>(capacity);
@@ -67,6 +62,7 @@ public class SAP {
 	
 	public void update(){
 		long t1 = System.nanoTime();
+		//Sort the insertion/deletion lists
 		if (!addListX.isEmpty()){
 			Collections.sort(addListX, comp);
 			Collections.sort(addListY, comp);
@@ -76,18 +72,21 @@ public class SAP {
 			Collections.sort(removeListY, comp);
 		}
 		long t2 = System.nanoTime();
+		//perform insertions/deletions
 		insertNewObjects(x, addListX, true);
 		insertNewObjects(y, addListY, false);
 		removeObjects(x, removeListX, true);
 		removeObjects(y, removeListY, false);
 		long t3 = System.nanoTime();
+		//sort lists and update collisions
 		updateList(x,true);
 		updateList(y,false);
 		long t4 = System.nanoTime();
-		double tg = t4-t1;
-//		System.out.println("total time: "+((t4-t1)+" for "+x.size()));
-//		System.out.println((t2-t1)/tg+", "+(t3-t2)/tg+", "+(t4-t3)/tg);
-//		System.exit(0);
+//		double tg = t4-t1;
+//		if (((t4-t1)/100000)/10.0 > 30){
+//			System.out.println("total time: "+(((t4-t1)/100000)/10.0+" for "+x.size()));
+//			System.out.println((t2-t1)/tg+", "+(t3-t2)/tg+", "+(t4-t3)/tg);
+//		}
 	}
 	
 	ArrayList<EndPointOwner> removeIDs = new ArrayList<>();
@@ -138,7 +137,8 @@ public class SAP {
 	private void insertNewObjects(ArrayList<EndPoint> list, ArrayList<EndPoint> add, boolean x) {
 		if (add.isEmpty())
 			return;
-		ArrayList<Box> openBoxes = new ArrayList<>(); //boxes that are open -> collide with inserted objects
+		
+		ArrayList<Box> openBoxes = new ArrayList<>(); //boxes that are open -> collide with objects
 		int nextIndex = 0;
 		float nextValue = add.get(0).value; //value of object that needs to get inserted next
 		boolean end = false;
@@ -152,7 +152,7 @@ public class SAP {
 					else if (newP.status == 0) //is a max -> remove from open collisions list
 						openBoxes.remove((Box)newP.owner);
 				}
-				list.add(newP); //add the object
+				list.add(i,newP); //add the object
 				//prepare next object
 				nextIndex++;
 				if (nextIndex >= add.size())
@@ -215,20 +215,31 @@ public class SAP {
 	}
 
 	public void updateList(ArrayList<EndPoint> list, boolean isXAxis){
+		if (list.isEmpty())
+			return;
+		
 		int size = list.size();
+		float lastValue = list.get(0).value;
 		for (int i = 1 ; i < size ; i++){
 			EndPoint e = list.get(i);
 			float value = e.value;
+			if (lastValue <= value){//last value was smaller or equivalent to current -> still sorted
+				lastValue = value;
+				continue;
+			}
 			int nr = i;
 			for (int j = i-1 ; j >= 0 ; j--){
 				EndPoint e2 = list.get(j);
-				if (e2.value <= value)
+				if (j == i-1)
+					lastValue = e2.value;
+				else if (e2.value <= value)
 					break;
+				//swap objects
 				list.set(nr, e2);
 				list.set(j, e);
 				nr = j;
 				
-				//SWAP LOGIC:
+				//overlap tests
 				if (e.status == e2.status)
 					continue;
 				if (e.owner instanceof Point){
@@ -252,27 +263,12 @@ public class SAP {
 				else {
 					Box b1 = (Box) e.owner;
 					Box b2 = (Box) e2.owner;
-//					ArrayList<Integer> print = new ArrayList<>();
-//					if (b1.xMax.value < b2.xMin.value)
-//						print.add(1);
-//					if (b2.xMax.value < b1.xMin.value)
-//						print.add(2);
-//					if (b1.yMax.value < b2.yMin.value)
-//						print.add(3);
-//					if (b2.yMax.value < b1.yMin.value)
-//						print.add(4);
-////					if (print.size() > 0){
-//						System.out.println();
-//						System.out.print("collision tests: ");
-////					}
-//					for (Integer k : print)
-//						System.out.print(k);
 					if (!(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value)){
-						b1.collisions.putIfAbsent((Integer)b2.id, b2);
-						b2.collisions.putIfAbsent((Integer)b1.id, b1);
+						b1.collisions.putIfAbsent(b2.id, b2);
+						b2.collisions.putIfAbsent(b1.id, b1);
 					} else {
-						b1.collisions.remove((Integer)b2.id);
-						b2.collisions.remove((Integer)b1.id);
+						b1.collisions.remove(b2.id);
+						b2.collisions.remove(b1.id);
 					}
 				}
 			}
