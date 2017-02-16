@@ -18,7 +18,7 @@ public class CollisionTestMain {
 	
 	public static int totalDynamicObjects = 10000;
 	public static int totalStaticObjects = 100000;
-	public static double maxSpeed = 5;
+	public static double maxSpeed = 100;
 	public static double collisionDistance = 2; //the minimal collision distance, half of the AABB width/height
 	public static int changesPerSecond = 0; //insertions and deletions that will be performed every second
 	
@@ -110,7 +110,7 @@ public class CollisionTestMain {
 			double deltaT = ((double)currentTime-lastTime)/sekToNs;
 			
 			//perform deletions, insertions
-			processChanges(currentTime, lastTime, test);
+			processChanges(deltaT, test);
 			
 			//move objects
 			TickHelper.moveObjects(deltaT);
@@ -150,9 +150,9 @@ public class CollisionTestMain {
 		return currentTime-startTime-warmup;
 	}
 	
-	private static void processChanges(long currentTime, long lastTime, CollisionTest test){
+	private static void processChanges(double deltaT, CollisionTest test){
 		if (changesPerSecond != 0){
-			changesValue += changesPerSecond*(((double)currentTime-lastTime)/sekToNs);
+			changesValue += changesPerSecond*deltaT;
 			int changes = (int)changesValue;
 			changesValue -= changes;
 			for (int i = 0 ; i < changes ; i++){
