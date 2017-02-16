@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
-import de.FelixPerko.CollisionTest.Point;
-
 public class SAP {
 	
 	ArrayList<EndPoint> x,y;
