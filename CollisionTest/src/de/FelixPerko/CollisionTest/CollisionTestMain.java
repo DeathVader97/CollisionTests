@@ -18,7 +18,7 @@ public class CollisionTestMain {
 	
 	public static int totalDynamicObjects = 10000;
 	public static int totalStaticObjects = 100000;
-	public static double maxSpeed = 100;
+	public static double maxSpeed = 5;
 	public static double collisionDistance = 2; //the minimal collision distance, half of the AABB width/height
 	public static int changesPerSecond = 0; //insertions and deletions that will be performed every second
 	
@@ -65,7 +65,7 @@ public class CollisionTestMain {
 //		tests.add(new SweepAndPruneGridTest(5, 5));
 		tests.add(new SweepAndPruneGridTest(10, 10));
 //		tests.add(new SweepAndPruneGridTest(20, 20));
-		tests.add(new SweepAndPruneGridTest(40, 40));
+//		tests.add(new SweepAndPruneGridTest(40, 40));
 	}
 
 	private static void initObjects() {

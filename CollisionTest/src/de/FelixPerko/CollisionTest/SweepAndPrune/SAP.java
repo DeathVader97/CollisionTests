@@ -230,7 +230,9 @@ public class SAP {
 			int nr = i;
 			for (int j = i-1 ; j >= 0 ; j--){
 				EndPoint e2 = list.get(j);
-				if (e2.value <= value)
+				if (j == i-1)
+					lastValue = e2.value;
+				else if (e2.value <= value)
 					break;
 				//swap objects
 				list.set(nr, e2);
@@ -270,7 +272,6 @@ public class SAP {
 					}
 				}
 			}
-			lastValue = value;
 		}
 	}
 }
