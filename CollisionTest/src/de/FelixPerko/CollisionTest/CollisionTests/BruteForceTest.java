@@ -13,7 +13,7 @@ public class BruteForceTest extends CollisionTest {
 	 * 		from every moving object
 	 * 		to every other object
 	 * 		every frame.
-	 * Isn't actually functional, just a dummy to get an idea of the performance achieved using trivial brute force
+	 * Isn't actually functional, just a dummy to get an idea of the performance achieved using brute force
 	 */
 	
 	@Override

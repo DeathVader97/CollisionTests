@@ -53,20 +53,20 @@ public class TickHelper {
 		
 		if (x < 0){
 			x = 0;
-			o.getVel().multed(helpVector1);
+			o.getVel().mult(helpVector1);
 //			o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
 		} else if (x > xb){
 			x = xb;
-			o.getVel().multed(helpVector1);
+			o.getVel().mult(helpVector1);
 //			o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
 		}
 		if (y < 0){
 			y = 0;
-			o.getVel().multed(helpVector2);
+			o.getVel().mult(helpVector2);
 //			o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
 		} else if (y > yb){
 			y = yb;
-			o.getVel().multed(helpVector2);
+			o.getVel().mult(helpVector2);
 //			o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
 		}
 		

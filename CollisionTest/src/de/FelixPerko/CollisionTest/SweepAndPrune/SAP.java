@@ -27,13 +27,6 @@ public class SAP {
 		}
 	};
 	
-	/*
-	 * intersection byte:
-	 * index 0 = intersects x
-	 * index 1 = intersects y
-	 */
-	
-	
 	public SAP(int capacity){
 		x = new ArrayList<>(capacity);
 		y = new ArrayList<>(capacity);
@@ -69,6 +62,7 @@ public class SAP {
 	
 	public void update(){
 		long t1 = System.nanoTime();
+		//Sort the insertion/deletion lists
 		if (!addListX.isEmpty()){
 			Collections.sort(addListX, comp);
 			Collections.sort(addListY, comp);
@@ -78,11 +72,13 @@ public class SAP {
 			Collections.sort(removeListY, comp);
 		}
 		long t2 = System.nanoTime();
+		//perform insertions/deletions
 		insertNewObjects(x, addListX, true);
 		insertNewObjects(y, addListY, false);
 		removeObjects(x, removeListX, true);
 		removeObjects(y, removeListY, false);
 		long t3 = System.nanoTime();
+		//sort lists and update collisions
 		updateList(x,true);
 		updateList(y,false);
 		long t4 = System.nanoTime();
@@ -91,7 +87,6 @@ public class SAP {
 //			System.out.println("total time: "+(((t4-t1)/100000)/10.0+" for "+x.size()));
 //			System.out.println((t2-t1)/tg+", "+(t3-t2)/tg+", "+(t4-t3)/tg);
 //		}
-//		System.exit(0);
 	}
 	
 	ArrayList<EndPointOwner> removeIDs = new ArrayList<>();
@@ -143,7 +138,7 @@ public class SAP {
 		if (add.isEmpty())
 			return;
 		
-		ArrayList<Box> openBoxes = new ArrayList<>(); //boxes that are open -> collide with inserted objects
+		ArrayList<Box> openBoxes = new ArrayList<>(); //boxes that are open -> collide with objects
 		int nextIndex = 0;
 		float nextValue = add.get(0).value; //value of object that needs to get inserted next
 		boolean end = false;
@@ -217,33 +212,18 @@ public class SAP {
 			}
 		}
 		add.clear();
-		
-//		if (x){
-//			ArrayList<String> printlist = new ArrayList<>();
-//			for (EndPoint e : list)
-//				printlist.add(e.value+"");
-//			System.out.println("insert to: "+printlist.toString());
-//		}
 	}
 
 	public void updateList(ArrayList<EndPoint> list, boolean isXAxis){
 		if (list.isEmpty())
 			return;
-
-//		if (isXAxis){
-//			ArrayList<String> printlist = new ArrayList<>();
-//			for (EndPoint e : list)
-//				printlist.add(e.value+"");
-//			System.out.println("update from: "+printlist.toString());
-//		}
 		
 		int size = list.size();
 		float lastValue = list.get(0).value;
 		for (int i = 1 ; i < size ; i++){
-			long t1 = System.nanoTime();
 			EndPoint e = list.get(i);
 			float value = e.value;
-			if (lastValue <= value){
+			if (lastValue <= value){//last value was smaller or equivalent to current -> still sorted
 				lastValue = value;
 				continue;
 			}
@@ -252,25 +232,20 @@ public class SAP {
 				EndPoint e2 = list.get(j);
 				if (e2.value <= value)
 					break;
+				//swap objects
 				list.set(nr, e2);
 				list.set(j, e);
 				nr = j;
-
-				long tt1 = System.nanoTime();
-				long tt2 = 0;
-				int config = 0;
-				//SWAP LOGIC:
+				
+				//overlap tests
 				if (e.status == e2.status)
 					continue;
 				if (e.owner instanceof Point){
 					Box b = (Box) e2.owner;
 					Point p = (Point) e.owner;
 					if (p.x.value >= b.xMin.value && p.x.value <= b.xMax.value && p.y.value >= b.yMin.value && p.y.value <= b.yMax.value){
-						tt2 = System.nanoTime();
 						b.collisions.putIfAbsent(p.id, p);
 					} else {
-						config = 1;
-						tt2 = System.nanoTime();
 						b.collisions.remove(p.id);
 					}
 				}
@@ -278,51 +253,24 @@ public class SAP {
 					Box b = (Box) e.owner;
 					Point p = (Point) e2.owner;
 					if (p.x.value >= b.xMin.value && p.x.value <= b.xMax.value && p.y.value >= b.yMin.value && p.y.value <= b.yMax.value){
-						config = 2;
-						tt2 = System.nanoTime();
-						b.collisions.putIfAbsent((Integer)p.id, p);
+						b.collisions.putIfAbsent(p.id, p);
 					} else {
-						config = 3;
-						tt2 = System.nanoTime();
-						b.collisions.remove((Integer)p.id);
+						b.collisions.remove(p.id);
 					}
 				}
 				else {
 					Box b1 = (Box) e.owner;
 					Box b2 = (Box) e2.owner;
 					if (!(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value)){
-						config = 4;
-						tt2 = System.nanoTime();
-						b1.collisions.putIfAbsent((Integer)b2.id, b2);
-						b2.collisions.putIfAbsent((Integer)b1.id, b1);
+						b1.collisions.putIfAbsent(b2.id, b2);
+						b2.collisions.putIfAbsent(b1.id, b1);
 					} else {
-						config = 5;
-						tt2 = System.nanoTime();
-						b1.collisions.remove((Integer)b2.id);
-						b2.collisions.remove((Integer)b1.id);
+						b1.collisions.remove(b2.id);
+						b2.collisions.remove(b1.id);
 					}
 				}
-				long tt3 = System.nanoTime();
-//				if (tt3-tt1 > 50000000){
-//					System.out.println(config);
-//					if (config == 3)
-//						System.out.println("objects: "+((Box)e.owner).collisions.size());
-//					System.out.println((tt2-tt1)+", "+(tt3-tt2));
-//				}
 			}
 			lastValue = value;
-//			timings.add((int) (System.nanoTime()-t1));
 		}
-		
-//		if (isXAxis){
-//			ArrayList<String> printlist = new ArrayList<>();
-//			for (EndPoint e : list)
-//				printlist.add(e.value+"");
-//			System.out.println("update to: "+printlist.toString());
-//		}
-//		if (System.nanoTime() - beginTime > 50000000)
-//			for (int time : timings)
-//				if (time > 100000)
-//					System.out.println(time);
 	}
 }

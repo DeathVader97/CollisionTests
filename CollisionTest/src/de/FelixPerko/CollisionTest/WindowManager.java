@@ -17,14 +17,14 @@ public class WindowManager {
 	
 	JFrame frame;
 	CustomComponent c;
-	boolean disabled;
+	boolean enabled;
 	
 	public WindowManager(boolean enabled){
-		this.disabled = !enabled;
+		this.enabled = enabled;
 	}
 	
 	public void init() {
-		if (disabled)
+		if (!enabled)
 			return;
 		frame = new JFrame();
 		frame.getContentPane().setPreferredSize(new Dimension(1000, 1000));
@@ -36,9 +36,8 @@ public class WindowManager {
 	}
 
 	public void update() {
-		if (disabled)
-			return;
-		frame.repaint();
+		if (enabled)
+			frame.repaint();
 	}
 	
 }
@@ -80,7 +79,7 @@ class CustomComponent extends JComponent{
 				}
 			} catch (ConcurrentModificationException|NullPointerException e){
 				//just try again for now
-				paintComponent(g);
+//				paintComponent(g);
 			}
 		}
 	}

@@ -8,54 +8,46 @@ import de.FelixPerko.CollisionTest.CollisionTests.SweepAndPruneTest;
 
 public class CollisionTestMain {
 	
+	/*
+	 * This is a test program for collision detection algorithms.
+	 */
+	
+	private static WindowManager windowManager = new WindowManager(false);
+	public static long sekToNs = 1000000000L;
+	
 	public static int totalDynamicObjects = 5000;
 	public static int totalStaticObjects = 50000;
 	public static double maxSpeed = 100;
+	public static double collisionDistance = 2; //the minimal collision distance, half of the AABB width/height
+	public static int changesPerSecond = 0; //insertions and deletions that will be performed every second
 	
-	public static double collisionDistance = 2;
-	public static Vector2d bounds = new Vector2d(1000, 1000);
+	public static Vector2d bounds = new Vector2d(1000, 1000); //size of simulation plane
 	
-	public static long msToSek = 1000000000L;
-	public static long simulationTime = 30*msToSek;
-	public static long warmup = 10*msToSek;
-	public static int changesPerSecond = 0;
+	public static long simulationTime = 30*sekToNs;
+	public static long warmup = 10*sekToNs;
 	
 	public static CollisionTest currentTest;
 	
-	public static ArrayList<TestObject> objects = new ArrayList<>();
-	public static ArrayList<DynamicDimentionalObject> updateObjects = new ArrayList<>();
-	static ArrayList<CollisionTest> tests = new ArrayList<>();
-	
-	private static WindowManager windowManager = new WindowManager(false);
+	public static ArrayList<TestObject> objects = new ArrayList<>(); //list of all objects
+	public static ArrayList<DynamicDimentionalObject> updateObjects = new ArrayList<>(); //list of moving objects that need to be updated
+	static ArrayList<CollisionTest> tests = new ArrayList<>(); //list of tests that will be performed
 	
 	public static void main(String[] args) {
 		
-//		DynamicDimentionalObject o = new DynamicDimentionalObject(
-//				new Vector2d(bounds.x*Math.random(), bounds.y*Math.random()),
-//				new Vector2d(maxSpeed*2*(Math.random()-0.5), maxSpeed*2*(Math.random()-0.5)));
-//		DynamicDimentionalObject o2 = new DynamicDimentionalObject(
-//				new Vector2d(bounds.x*Math.random(), bounds.y*Math.random()),
-//				new Vector2d(maxSpeed*2*(Math.random()-0.5), maxSpeed*2*(Math.random()-0.5)));
-//		SweepAndPruneTest test = new SweepAndPruneTest();
-//		objects.add(o);
-//		updateObjects.add(o);
-//		test.init();
-//		objects.add(o2);
-//		updateObjects.add(o2);
-//		test.addObject(o2);
-//		test.tick(false);
-		
 		windowManager.init();
+		
 		addTests();
+		
 		initObjects();
+		
 		for (int i = 1 ; i <= 1 ; i++){
 			int testNr = 0;
 			for (CollisionTest test : tests){
 				currentTest = test;
-				test.init();
-				long timeUsed = loop(test);
-				test.printData(timeUsed, 1000000000l);
+				test.init(); //prepare test
+				long timeUsed = loop(test); //execute test
 				
+				test.printData(timeUsed, 1000000000l);
 				if (testNr < tests.size()-1)
 					System.out.print("; ");
 				testNr++;
@@ -110,33 +102,25 @@ public class CollisionTestMain {
 		//main loop
 		long currentTime = System.nanoTime();
 		while ((currentTime-startTime) <= simulationTime+warmup){
-//			long tt1 = System.nanoTime();
 			
 			if (lastTime == 0){
 				lastTime = currentTime;
 			}
-			double deltaT = ((double)currentTime-lastTime)/msToSek;
-//			long tt2 = System.nanoTime();
+			double deltaT = ((double)currentTime-lastTime)/sekToNs;
 			
 			//perform deletions, insertions
 			processChanges(currentTime, lastTime, test);
-//			long tt3 = System.nanoTime();
 			
 			//move objects
 			TickHelper.moveObjects(deltaT);
-//			long tt4 = System.nanoTime();
 			
 			//perform test tick
 			test.tick((currentTime-startTime) > warmup);
-//			long tt5 = System.nanoTime();
 			
 			//log tick time
 			long endTime = System.nanoTime();
 			if ((currentTime-startTime) > warmup){
 				ticktimes.add((endTime-currentTime));
-//				double tg = tt5-tt1;
-//				System.out.println((tt5-tt1)/1000000);
-//				System.out.println((int)(10*(tt2-tt1)/tg)+", "+(int)(10*(tt3-tt2)/tg)+", "+(int)(10*(tt4-tt3)/tg)+", "+(int)(10*(tt5-tt4)/tg));
 			}
 			
 			//render if window is enabled
@@ -157,8 +141,6 @@ public class CollisionTestMain {
 		}
 		median /= ticktimes.size();
 		for (int i = ticktimes.size()-1 ; i >= 0 ; i--){
-//			time += (double)ticktimes.get(i)/msToSek;
-//			System.out.println((""+((int)(time*100)/100.0)).replace('.', ',')+";"+ticktimes.get(i));
 			System.out.println(ticktimes.get(i));
 		}
 		System.out.println("median: "+nsToMs(median,3)+"ms");
@@ -169,7 +151,7 @@ public class CollisionTestMain {
 	
 	private static void processChanges(long currentTime, long lastTime, CollisionTest test){
 		if (changesPerSecond != 0){
-			changesValue += changesPerSecond*(((double)currentTime-lastTime)/msToSek);
+			changesValue += changesPerSecond*(((double)currentTime-lastTime)/sekToNs);
 			int changes = (int)changesValue;
 			changesValue -= changes;
 			for (int i = 0 ; i < changes ; i++){

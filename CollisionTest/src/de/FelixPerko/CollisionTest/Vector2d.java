@@ -31,7 +31,7 @@ public class Vector2d {
 		return dx*dx + dy*dy;
 	}
 	
-	public void multed(Vector2d other){
+	public void mult(Vector2d other){
 		this.x = x*other.x;
 		this.y = y*other.y;
 	}

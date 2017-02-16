@@ -12,6 +12,21 @@ import de.FelixPerko.CollisionTest.SweepAndPrune.SAPGrid;
 
 public class SweepAndPruneGridTest extends CollisionTest {
 	
+	/*
+	 * A grid of Sweep and Prune instances is used.
+	 * 
+	 * This spatial partition provides several advantages:
+	 * - limits comparisons with objects that overlap on one axis but are actually far away (-> put in different SAPs)
+	 * - faster insertions and deletions due to shorter lists
+	 * 
+	 * And disadvantages:
+	 * - objects that intersect multiple SAPs have to be maintained in all of them
+	 * - more insertions and deletions due to movement through multiple SAPs
+	 * - AABBs can't be bigger than a SAP-cell in this implementation
+	 * 
+	 * More information about the default SAP algorithm can be found in the class CollisionTests/SweepAndPruneTest
+	 */
+	
 	public SAPGrid grid;
 	int w,h;
 	

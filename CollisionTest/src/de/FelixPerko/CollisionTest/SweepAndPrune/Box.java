@@ -9,7 +9,7 @@ import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
 public class Box extends EndPointOwner{
 	
 	EndPoint xMin,xMax,yMin,yMax;
-	public ConcurrentHashMap<Integer, EndPointOwner> collisions = new ConcurrentHashMap<>();
+	public ConcurrentHashMap<Integer, EndPointOwner> collisions = new ConcurrentHashMap<>(50,.75f,1);
 	public DynamicDimentionalObject object;
 	public boolean removed = false; //marked for removal
 	
