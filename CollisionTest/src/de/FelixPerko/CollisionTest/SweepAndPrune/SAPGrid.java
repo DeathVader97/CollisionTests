@@ -126,16 +126,87 @@ public class SAPGrid {
 	
 	int last = 0;
 	
-//	ExecutorService es = TickHelper.es;
-//	int threadCount = TickHelper.helperThreadCount;
-//	HelperRunnable[] runnables = new HelperRunnable[threadCount];
-//	{
-//		for (int i = 0 ; i < threadCount ; i++)
-//			runnables[i] = new HelperRunnable();
-//	}
+	ExecutorService es = TickHelper.es;
+	int threadCount = 0;
+	HelperRunnable[] runnables;
+	double higherTimingBorder = 0;
 	
 	public void tick() {
-		Arrays.stream(saps).parallel().forEach(s -> s.update());
+//		Arrays.stream(saps).parallel().forEach(s -> s.update());
+		if (threadCount != TickHelper.helperThreadCount){
+			HelperRunnable.sap = saps;
+			threadCount = TickHelper.helperThreadCount;
+			runnables = new HelperRunnable[threadCount];
+			int elementsLeft = saps.length;
+			for (int i = 0 ; i < threadCount ; i++){
+				runnables[i] = new HelperRunnable();
+				runnables[i].processAmount = Math.max(1, (int)((double)elementsLeft/(threadCount-i)));
+			}
+			higherTimingBorder = 1./threadCount + 1.5/saps.length;
+		}
+		CountDownLatch latch = new CountDownLatch(threadCount);
+		HelperRunnable.latch = latch;
+		
+		double totalTime = 0;
+		for (int i = 0 ; i < threadCount ; i++){
+			long time = runnables[i].runningTime;
+			totalTime += time;
+		}
+		
+		int elementCounter = 0;
+		int size = saps.length;
+		if (totalTime == 0){
+//			Arrays.stream(saps).parallel().forEach(s -> s.update());
+			int elementsLeft = size;
+			for (int i = 0 ; i < threadCount ; i++){
+				HelperRunnable hr = runnables[i];
+				int amount = (int) Math.round((double)elementsLeft/(threadCount-1));
+				hr.processAmount = amount;
+				elementsLeft -= amount;
+				hr.setLoad(elementCounter, (elementCounter += amount));
+				es.execute(hr);
+			}
+		}else {
+			
+			//rebalance lowest and highest
+			int lowestPos = 0;
+			int highestPos = lowestPos;
+			long lowest = runnables[lowestPos].runningTime;
+			long highest = runnables[lowestPos].runningTime;
+			for (int j = lowestPos+1; j < threadCount ; j++){
+				long time = runnables[j].runningTime;
+				if (time < lowest){
+					lowest = time;
+					lowestPos = j;
+				} else if (time > highest && runnables[j].processAmount > 1){
+					highest = time;
+					highestPos = j;
+				}
+			}
+			runnables[lowestPos].processAmount++;
+			runnables[highestPos].processAmount--;
+			
+			for (int i = 0 ; i < threadCount ; i++){
+				HelperRunnable hr = runnables[i];
+				int higherBorder = elementCounter + hr.processAmount;
+				if (i == threadCount-1){
+					higherBorder = size-1;
+				}
+				hr.setLoad(elementCounter, higherBorder);
+				elementCounter = higherBorder;
+//				System.out.println(hr.h-hr.l +" ("+(hr.averageRunningTime/totalTime)+")");
+//				System.out.print(((hr.runningTime/totalTime)+"; ").replace('.', ','));
+				es.execute(hr);
+			}
+//			System.out.println();
+//			System.out.println("---"+higherTimingBorder);
+		}
+		
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public int[] findBordersX(){
@@ -156,23 +227,27 @@ public class SAPGrid {
 }
 
 
-//class HelperRunnable implements Runnable{
-//	
-//	int l,h;
-//	public static SAP[] sap;
-//	public static CountDownLatch latch;
-//	
-//	public static AtomicInteger nextIndex = new AtomicInteger(0);
-//	
-//	public void setLoad(int l, int h){
-//		this.l = l;
-//		this.h = h;
-//	}
-//	
-//	@Override
-//	public void run() {
-//		for (int i = l ; i < h ; i++)	
-//			sap[i].update();
-//		latch.countDown();
-//	}
-//}
+class HelperRunnable implements Runnable{
+	
+	int l,h;
+	int processAmount;
+	
+	public static SAP[] sap;
+	public static CountDownLatch latch;
+	public long runningTime;
+	
+	public void setLoad(int l, int h){
+		this.l = l;
+		this.h = h;
+	}
+	
+	@Override
+	public void run() {
+		long t1 = System.nanoTime();
+		for (int i = l ; i < h ; i++)
+			sap[i].update();
+		long t2 = System.nanoTime();
+		runningTime = t2-t1;
+		latch.countDown();
+	}
+}
