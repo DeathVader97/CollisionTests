@@ -1,5 +1,6 @@
 package de.FelixPerko.CollisionTest.SweepAndPrune;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +26,10 @@ public class SAPGrid {
 	}
 	
 	boolean test = true;
-	
+
+	ThreadLocal<int[]> sapBuffer = new ThreadLocal<>();
+	ThreadLocal<ArrayList<Integer>> added = new ThreadLocal<>();
+	ThreadLocal<ArrayList<Integer>> removed = new ThreadLocal<>();
 	
 	public void updatePos(Box b){
 		long t1 = System.nanoTime();
@@ -36,7 +40,11 @@ public class SAPGrid {
 		int minYScale = minY*w;
 		int maxYScale = maxY*w;
 		
-		int[] newSAPs = new int[4];
+		int[] newSAPs = sapBuffer.get();
+		if (newSAPs == null){
+			newSAPs = new int[4];
+			sapBuffer.set(newSAPs);
+		}
 		newSAPs[0] = minX+minYScale;
 		newSAPs[1] = maxX+minYScale;
 		newSAPs[2] = minX+maxYScale;
@@ -60,8 +68,14 @@ public class SAPGrid {
 		if (newSAPs[0] == b.saps[0] && newSAPs[1] == b.saps[1] && newSAPs[2] == b.saps[2] && newSAPs[3] == b.saps[3])
 			return;
 		
-		ArrayList<Integer> added = new ArrayList<>();
-		ArrayList<Integer> removed = new ArrayList<>();
+		ArrayList<Integer> added = this.added.get();
+		ArrayList<Integer> removed = this.removed.get();
+		if (added == null){
+			added = new ArrayList<>();
+			removed = new ArrayList<>();
+			this.added.set(added);
+			this.removed.set(removed);
+		}
 		for (int i = 0 ; i < 4 ; i++){
 			if (b.saps[i] != newSAPs[i]){
 				if (newSAPs[i] != -1){
@@ -80,6 +94,9 @@ public class SAPGrid {
 				}
 			}
 		}
+		added.clear();
+		removed.clear();
+		sapBuffer.set(b.saps);
 		b.saps = newSAPs;
 	}
 

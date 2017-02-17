@@ -24,8 +24,8 @@ public class CollisionTestMain {
 	
 	public static Vector2d bounds = new Vector2d(1000, 1000); //size of simulation plane
 	
-	public static long simulationTime = 30*sekToNs;
-	public static long warmup = 10*sekToNs;
+	public static long simulationTime = 3*sekToNs;
+	public static long warmup = 3*sekToNs;
 	
 	public static CollisionTest currentTest;
 	
@@ -119,10 +119,10 @@ public class CollisionTestMain {
 			test.tick((currentTime-startTime) > warmup);
 			
 			//log tick time
-			long endTime = System.nanoTime();
-			if ((currentTime-startTime) > warmup){
-				ticktimes.add((endTime-currentTime));
-			}
+//			long endTime = System.nanoTime();
+//			if ((currentTime-startTime) > warmup){
+//				ticktimes.add((endTime-currentTime));
+//			}
 			
 			//render if window is enabled
 			windowManager.update();
@@ -132,20 +132,20 @@ public class CollisionTestMain {
 		}
 		
 		//time is over, finish test
-		long average = 0;
-		long max = 0;
-		for (int i = ticktimes.size()-1 ; i >= 0 ; i--){
-			long v = ticktimes.get(i);
-			average += v;
-			if (v > max)
-				max = v;
-		}
-		average /= ticktimes.size();
-		for (int i = ticktimes.size()-1 ; i >= 0 ; i--){
-			System.out.println(ticktimes.get(i));
-		}
-		System.out.println("average: "+nsToMs(average,3)+"ms");
-		System.out.println("max: "+nsToMs(max,3)+"ms ("+max*100/average+"%)");
+//		long average = 0;
+//		long max = 0;
+//		for (int i = ticktimes.size()-1 ; i >= 0 ; i--){
+//			long v = ticktimes.get(i);
+//			average += v;
+//			if (v > max)
+//				max = v;
+//		}
+//		average /= ticktimes.size();
+//		for (int i = ticktimes.size()-1 ; i >= 0 ; i--){
+//			System.out.println(ticktimes.get(i));
+//		}
+//		System.out.println("average: "+nsToMs(average,3)+"ms");
+//		System.out.println("max: "+nsToMs(max,3)+"ms ("+max*100/average+"%)");
 		
 		return currentTime-startTime-warmup;
 	}

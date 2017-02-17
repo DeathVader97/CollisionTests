@@ -45,6 +45,8 @@ public class WindowManager {
 class CustomComponent extends JComponent{
 	private static final long serialVersionUID = -2455429557528511279L;
 	
+	private static final Color DARK_GREEN = new Color(0f, 0.5f, 0f);
+	
 	@Override
 	protected void paintComponent(Graphics g) {
 		double rad = CollisionTestMain.collisionDistance;
@@ -64,7 +66,7 @@ class CustomComponent extends JComponent{
 			for (TestObject o : new ArrayList<TestObject>(CollisionTestMain.objects)){
 				try{
 					if (o instanceof StaticPointObject){
-						g.setColor(Color.GREEN);
+						g.setColor(DARK_GREEN);
 						g.drawRect((int)(o.pos.x), (int)(o.pos.y), 1, 1);;
 					} else {
 						if (((DynamicDimentionalObject)o).SAPbox.collisions.isEmpty())
