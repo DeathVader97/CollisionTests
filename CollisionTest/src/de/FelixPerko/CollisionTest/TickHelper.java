@@ -24,42 +24,55 @@ public class TickHelper {
 	}
 	
 	public static void moveObjects(double timeFactor){
-		ArrayList<DynamicDimentionalObject> objects = CollisionTestMain.updateObjects;
-		CountDownLatch latch = new CountDownLatch(helperThreadCount);
-		int s = objects.size();
-		int chunkSize = s/helperThreadCount;
-		for (int i = 0 ; i < helperThreadCount-1 ; i++)
-			es.execute(new HelperRunnable(objects, i*chunkSize, (i+1)*chunkSize, timeFactor, latch));
-		es.execute(new HelperRunnable(objects, (helperThreadCount-1)*chunkSize, s, timeFactor, latch));
-		
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-//		for (TestObject o : objects){
-//			double x = o.getPos().x;
-//			double y = o.getPos().y;
-//			x += o.getVel().x*timeFactor;
-//			y += o.getVel().y*timeFactor;
-//			
-//			if (x < 0){
-//				x = 0;
-//				o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
-//			} else if (x > xb){
-//				x = xb;
-//				o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
-//			}
-//			if (y < 0){
-//				y = 0;
-//				o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
-//			} else if (y > yb){
-//				y = yb;
-//				o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
-//			}
-//			
-//			o.setPos(new Vector2d(x, y));
+//		ArrayList<DynamicDimentionalObject> objects = CollisionTestMain.updateObjects;
+//		CountDownLatch latch = new CountDownLatch(helperThreadCount);
+//		int s = objects.size();
+//		int chunkSize = s/helperThreadCount;
+//		for (int i = 0 ; i < helperThreadCount-1 ; i++)
+//			es.execute(new HelperRunnable(objects, i*chunkSize, (i+1)*chunkSize, timeFactor, latch));
+//		es.execute(new HelperRunnable(objects, (helperThreadCount-1)*chunkSize, s, timeFactor, latch));
+//		
+//		try {
+//			latch.await();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
 //		}
+		
+		double xb = CollisionTestMain.bounds.x;
+		double yb = CollisionTestMain.bounds.y;
+		CollisionTestMain.updateObjects.parallelStream().forEach(e -> updateObject(e, timeFactor, xb, yb));
+	}
+	
+	static Vector2d helpVector1 = new Vector2d(-1,1);
+	static Vector2d helpVector2 = new Vector2d(1,-1);
+	private static void updateObject(DynamicDimentionalObject o, double timeFactor, double xb, double yb) {
+		double x = o.getPos().x;
+		double y = o.getPos().y;
+		x += o.getVel().x*timeFactor;
+		y += o.getVel().y*timeFactor;
+		
+		if (x < 0){
+			x = 0;
+			o.getVel().mult(helpVector1);
+//			o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
+		} else if (x > xb){
+			x = xb;
+			o.getVel().mult(helpVector1);
+//			o.setVel(new Vector2d(-o.getVel().x, o.getVel().y));
+		}
+		if (y < 0){
+			y = 0;
+			o.getVel().mult(helpVector2);
+//			o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
+		} else if (y > yb){
+			y = yb;
+			o.getVel().mult(helpVector2);
+//			o.setVel(new Vector2d(o.getVel().x, -o.getVel().y));
+		}
+		
+		o.pos.x = x;
+		o.pos.y = y;
+		o.positionUpdated();
 	}
 }
 

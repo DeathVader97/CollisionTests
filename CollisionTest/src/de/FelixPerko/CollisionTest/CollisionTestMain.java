@@ -17,15 +17,15 @@ public class CollisionTestMain {
 	public static long sekToNs = 1000000000L;
 	
 	public static int totalDynamicObjects = 10000;
-	public static int totalStaticObjects = 100000;
+	public static int totalStaticObjects = 10000;
 	public static double maxSpeed = 100;
 	public static double collisionDistance = 2; //the minimal collision distance, half of the AABB width/height
 	public static int changesPerSecond = 0; //insertions and deletions that will be performed every second
 	
 	public static Vector2d bounds = new Vector2d(1000, 1000); //size of simulation plane
 	
-	public static long simulationTime = 3*sekToNs;
-	public static long warmup = 3*sekToNs;
+	static long simulationTime = 30*sekToNs;
+	static long warmup = 5*sekToNs;
 	
 	public static CollisionTest currentTest;
 	
@@ -41,7 +41,8 @@ public class CollisionTestMain {
 		
 		initObjects();
 		
-		for (int i = 1 ; i <= 1 ; i++){
+		for (int i = 1 ; i <= 4 ; i++){
+			TickHelper.setThreadCount(i);
 			int testNr = 0;
 			for (CollisionTest test : tests){
 				currentTest = test;
@@ -103,6 +104,7 @@ public class CollisionTestMain {
 		//main loop
 		long currentTime = System.nanoTime();
 		while ((currentTime-startTime) <= simulationTime+warmup){
+//			System.out.println((currentTime-startTime)+" "+(simulationTime+warmup)+" "+true);
 			
 			if (lastTime == 0){
 				lastTime = currentTime;
@@ -119,10 +121,10 @@ public class CollisionTestMain {
 			test.tick((currentTime-startTime) > warmup);
 			
 			//log tick time
-//			long endTime = System.nanoTime();
-//			if ((currentTime-startTime) > warmup){
-//				ticktimes.add((endTime-currentTime));
-//			}
+			long endTime = System.nanoTime();
+			if ((currentTime-startTime) > warmup){
+				ticktimes.add((endTime-currentTime));
+			}
 			
 			//render if window is enabled
 			windowManager.update();

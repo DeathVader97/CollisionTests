@@ -6,10 +6,10 @@ import de.FelixPerko.CollisionTest.SweepAndPrune.EndPointOwner;
 public class DynamicDimentionalObject extends TestObject{
 	Vector2d vel;
 	
-	public Box SAPbox;
+	public Box sapbox;
 	
 	public DynamicDimentionalObject(Vector2d pos, Vector2d vel) {
-		SAPbox = new Box(this, null);
+		sapbox = new Box(this, null);
 		setPos(pos);
 		setVel(vel);
 	}
@@ -20,7 +20,7 @@ public class DynamicDimentionalObject extends TestObject{
 	
 	public void setPos(Vector2d pos) {
 		this.pos = pos;
-		SAPbox.update(pos.x, pos.y, CollisionTestMain.collisionDistance);
+		sapbox.update(pos.x, pos.y, CollisionTestMain.collisionDistance);
 	}
 	
 	public Vector2d getVel() {
@@ -32,11 +32,15 @@ public class DynamicDimentionalObject extends TestObject{
 	}
 
 	public Box getBox() {
-		return SAPbox;
+		return sapbox;
 	}
 
 	@Override
 	public EndPointOwner getEndPointOwner() {
-		return SAPbox;
+		return sapbox;
+	}
+
+	public void positionUpdated() {
+		sapbox.update(pos.x, pos.y, CollisionTestMain.collisionDistance);
 	}
 }

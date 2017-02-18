@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import de.FelixPerko.CollisionTest.Point;
+
 public class SAP {
 	
 	ArrayList<EndPoint> x,y;
@@ -132,11 +134,11 @@ public class SAP {
 		remove.clear();
 	}
 
-	ArrayList<Box> openBoxes = new ArrayList<>(); //boxes that are open -> collide with objects
 	private void insertNewObjects(ArrayList<EndPoint> list, ArrayList<EndPoint> add, boolean x) {
 		if (add.isEmpty())
 			return;
 		
+		ArrayList<Box> openBoxes = new ArrayList<>(); //boxes that are open -> collide with objects
 		int nextIndex = 0;
 		float nextValue = add.get(0).value; //value of object that needs to get inserted next
 		boolean end = false;
@@ -171,8 +173,8 @@ public class SAP {
 					} else {
 						Box b1 = (Box)epo;
 						if (!(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value)){
-							b1.collisions.putIfAbsent(b.id, b);
-							b.collisions.putIfAbsent(b1.id, b1);
+							b1.collisions.putIfAbsent((Integer)b.id, b);
+							b.collisions.putIfAbsent((Integer)b1.id, b1);
 						}
 					}
 				}
@@ -202,14 +204,13 @@ public class SAP {
 					} else {
 						Box b1 = (Box)epo;
 						if (!(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value)){
-							b1.collisions.putIfAbsent(b.id, b);
-							b.collisions.putIfAbsent(b1.id, b1);
+							b1.collisions.putIfAbsent((Integer)b.id, b);
+							b.collisions.putIfAbsent((Integer)b1.id, b1);
 						}
 					}
 				}
 			}
 		}
-		openBoxes.clear();
 		add.clear();
 	}
 

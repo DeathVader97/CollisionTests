@@ -1,34 +1,35 @@
 package de.FelixPerko.CollisionTest.CollisionTests;
 
-import java.sql.Savepoint;
 import java.util.ArrayList;
 import de.FelixPerko.CollisionTest.DynamicDimentionalObject;
-import de.FelixPerko.CollisionTest.StaticPointObject;
 import de.FelixPerko.CollisionTest.TestObject;
 import de.FelixPerko.CollisionTest.SweepAndPrune.Box;
-import de.FelixPerko.CollisionTest.SweepAndPrune.EndPointOwner;
 import de.FelixPerko.CollisionTest.SweepAndPrune.SAP;
 
 public class SweepAndPruneTest extends CollisionTest {
 	
-	// http://www.codercorner.com/SAP.pdf
+	/*	
+	 *	AABB Collision detection algorithm that sorts a list of EndPoints for every axis every tick.
+	 *	If EndPoints swap positions the overlap is updated.
+	 *	This implementation includes the collision with points (that don't have dimensions).
+	 *	
+	 *	Loosely based on the following tutorial:
+	 *  http://www.codercorner.com/SAP.pdf
+	 */
 	
 	SAP sapInstance;
 	
 	@Override
 	protected void onInit(ArrayList<TestObject> objects) {
-//		System.out.println("SAP init");
 		sapInstance = new SAP(objects.size());
 		for (TestObject o : objects){
 			sapInstance.addObject(o.getEndPointOwner());
 		}
 		sapInstance.update();
-//		System.out.println("finish init");
 	}
 
 	@Override
 	protected void onTick(ArrayList<TestObject> objects) {
-//		System.out.println("SAP tick");
 		sapInstance.update();
 	}
 
