@@ -38,6 +38,8 @@ public class SAPGrid {
 	
 	boolean test = true;
 	
+	ThreadLocal<int[]> newSAPs = new ThreadLocal<int[]>(){
+		@Override protected int[] initialValue(){return new int[4];}};
 	
 	public void updatePos(Box b){
 		long t1 = System.nanoTime();
@@ -51,28 +53,37 @@ public class SAPGrid {
 		int maxYScale = maxY*w;
 		
 		//calculate grid indices
-		int[] newSAPs = new int[4];
-		newSAPs[0] = minX+minYScale;
-		newSAPs[1] = maxX+minYScale;
-		newSAPs[2] = minX+maxYScale;
-		newSAPs[3] = maxX+maxYScale;
+		int[] newSAPs = this.newSAPs.get();
+		if (minX >= 0)
+			newSAPs[0] = minX+minYScale;
+		else
+			newSAPs[0] = -1;
+		if (maxX != minX && maxX < w)
+			newSAPs[1] = maxX+minYScale;
+		else
+			newSAPs[1] = -1;
+		if (maxY != minY && maxY < h){
+			if (minX >= 0)
+				newSAPs[2] = minX+maxYScale;
+			else
+				newSAPs[2] = -1;
+			if (maxX != minX && maxX < w)
+				newSAPs[3] = maxX+maxYScale;
+			else
+				newSAPs[3] = -1;
+		} else {
+			newSAPs[2] = -1;
+			newSAPs[3] = -1;
+		}
 		
 		//disable invalid indices
 		if (minX < 0){
 			newSAPs[0] = -1;
 			newSAPs[2] = -1;
 		}
-		if (maxX >= w){
-			newSAPs[1] = -1;
-			newSAPs[3] = -1;
-		}
 		if (minY < 0){
 			newSAPs[0] = -1;
 			newSAPs[1] = -1;
-		}
-		if (maxY >= h){
-			newSAPs[2] = -1;
-			newSAPs[3] = -1;
 		}
 		
 		//return if nothing changed compared to last tick
@@ -80,27 +91,28 @@ public class SAPGrid {
 			return;
 		
 		//add to new and remove from old sweep and prune components
-		ArrayList<Integer> added = new ArrayList<>();
-		ArrayList<Integer> removed = new ArrayList<>();
+//		ArrayList<Integer> added = this.added.get();
+//		ArrayList<Integer> removed = this.removed.get();
 		for (int i = 0 ; i < 4 ; i++){
 			if (b.saps[i] != newSAPs[i]){
 				if (newSAPs[i] != -1){
 					int val = newSAPs[i];
-					if (!added.contains(val) && !contains(b.saps, val)){
+					if (!contains(b.saps, val)){
 						saps[val].addObject(b);
-						added.add(val);
 					}
 				}
 				if (b.saps[i] != -1){
 					int val = b.saps[i];
-					if (!removed.contains(val) && !contains(newSAPs, val)){
+					if (!contains(newSAPs, val)){
 						saps[val].removeObject(b);
-						removed.add(val);
 					}
 				}
 			}
 		}
-		b.saps = newSAPs;
+		b.saps[0] = newSAPs[0];
+		b.saps[1] = newSAPs[1];
+		b.saps[2] = newSAPs[2];
+		b.saps[3] = newSAPs[3];
 	}
 
 	public void updatePos(Point point) {

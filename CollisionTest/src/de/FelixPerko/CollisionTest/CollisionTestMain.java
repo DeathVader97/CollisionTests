@@ -16,8 +16,8 @@ public class CollisionTestMain {
 	private static WindowManager windowManager = new WindowManager(false);
 	public static long sekToNs = 1000000000L;
 	
-	public static int totalDynamicObjects = 10000;
-	public static int totalStaticObjects = 10000;
+	public static int totalDynamicObjects = 5000;
+	public static int totalStaticObjects = 50000;
 	public static double maxSpeed = 100;
 	public static double collisionDistance = 2; //the minimal collision distance, half of the AABB width/height
 	public static int changesPerSecond = 0; //insertions and deletions that will be performed every second
@@ -39,10 +39,17 @@ public class CollisionTestMain {
 		
 		addTests();
 		
-		initObjects();
-		
-		for (int i = 1 ; i <= 4 ; i++){
-			TickHelper.setThreadCount(i);
+		for (int i = 0 ; i <= 4 ; i++){
+			switch (i){
+			case 0: totalStaticObjects = totalDynamicObjects/2; break;
+			case 1: totalStaticObjects = totalDynamicObjects; break;
+			case 2: totalStaticObjects = totalDynamicObjects*2; break;
+			case 3: totalStaticObjects = totalDynamicObjects*5; break;
+			case 4: totalStaticObjects = totalDynamicObjects*10; break;
+			}
+			
+			initObjects();
+			
 			int testNr = 0;
 			for (CollisionTest test : tests){
 				currentTest = test;
@@ -143,8 +150,11 @@ public class CollisionTestMain {
 //				max = v;
 //		}
 //		average /= ticktimes.size();
-//		for (int i = ticktimes.size()-1 ; i >= 0 ; i--){
-//			System.out.println(ticktimes.get(i));
+//		for (int i = ticktimes.size()-1 ; i >= 0 ; i -= 100){
+//			long sum = ticktimes.get(i);
+//			for (int j = i ; j > i-100 && j >= 0 ; j--)
+//				sum += ticktimes.get(j);
+//			System.out.println(sum/100);
 //		}
 //		System.out.println("average: "+nsToMs(average,3)+"ms");
 //		System.out.println("max: "+nsToMs(max,3)+"ms ("+max*100/average+"%)");
