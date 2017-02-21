@@ -133,12 +133,13 @@ public class SAP {
 		}
 		remove.clear();
 	}
+	
+	ArrayList<Box> openBoxes = new ArrayList<Box>(); //boxes that are open -> collide with objects
 
 	private void insertNewObjects(ArrayList<EndPoint> list, ArrayList<EndPoint> add, boolean x) {
 		if (add.isEmpty())
 			return;
 		
-		ArrayList<Box> openBoxes = new ArrayList<>(); //boxes that are open -> collide with objects
 		int nextIndex = 0;
 		float nextValue = add.get(0).value; //value of object that needs to get inserted next
 		boolean end = false;
