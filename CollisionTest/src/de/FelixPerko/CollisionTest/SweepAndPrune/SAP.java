@@ -174,8 +174,8 @@ public class SAP {
 					} else {
 						Box b1 = (Box)epo;
 						if (!(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value)){
-							b1.collisions.putIfAbsent((Integer)b.id, b);
-							b.collisions.putIfAbsent((Integer)b1.id, b1);
+							if (b1.collisions.putIfAbsent((Integer)b.id, b) == null)
+								b.collisions.putIfAbsent((Integer)b1.id, b1);
 						}
 					}
 				}
@@ -205,13 +205,14 @@ public class SAP {
 					} else {
 						Box b1 = (Box)epo;
 						if (!(b1.xMax.value < b.xMin.value || b.xMax.value < b1.xMin.value)){
-							b1.collisions.putIfAbsent((Integer)b.id, b);
-							b.collisions.putIfAbsent((Integer)b1.id, b1);
+							if (b1.collisions.putIfAbsent(b.id, b) == null)
+								b.collisions.putIfAbsent(b1.id, b1);
 						}
 					}
 				}
 			}
 		}
+		openBoxes.clear();
 		add.clear();
 	}
 
@@ -265,11 +266,11 @@ public class SAP {
 					Box b1 = (Box) e.owner;
 					Box b2 = (Box) e2.owner;
 					if (!(b1.xMax.value < b2.xMin.value || b2.xMax.value < b1.xMin.value || b1.yMax.value < b2.yMin.value || b2.yMax.value < b1.yMin.value)){
-						b1.collisions.putIfAbsent(b2.id, b2);
-						b2.collisions.putIfAbsent(b1.id, b1);
+						if (b1.collisions.putIfAbsent(b2.id, b2) == null)
+							b2.collisions.putIfAbsent(b1.id, b1);
 					} else {
-						b1.collisions.remove(b2.id);
-						b2.collisions.remove(b1.id);
+						if (b1.collisions.remove(b2.id) != null)
+							b2.collisions.remove(b1.id);
 					}
 				}
 			}

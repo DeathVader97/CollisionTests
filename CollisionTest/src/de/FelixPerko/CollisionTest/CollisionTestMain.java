@@ -39,14 +39,14 @@ public class CollisionTestMain {
 		
 		addTests();
 		
-		for (int i = 0 ; i <= 4 ; i++){
-			switch (i){
-			case 0: totalStaticObjects = totalDynamicObjects/2; break;
-			case 1: totalStaticObjects = totalDynamicObjects; break;
-			case 2: totalStaticObjects = totalDynamicObjects*2; break;
-			case 3: totalStaticObjects = totalDynamicObjects*5; break;
-			case 4: totalStaticObjects = totalDynamicObjects*10; break;
-			}
+		for (int i = 1 ; i <= 1 ; i++){
+//			switch (i){
+//			case 0: totalStaticObjects = totalDynamicObjects/2; break;
+//			case 1: totalStaticObjects = totalDynamicObjects; break;
+//			case 2: totalStaticObjects = totalDynamicObjects*2; break;
+//			case 3: totalStaticObjects = totalDynamicObjects*5; break;
+//			case 4: totalStaticObjects = totalDynamicObjects*10; break;
+//			}
 			
 			initObjects();
 			

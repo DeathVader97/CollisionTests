@@ -2,6 +2,7 @@ package de.FelixPerko.CollisionTest.SweepAndPrune;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import de.FelixPerko.CollisionTest.Point;
@@ -73,16 +74,6 @@ public class SAPGrid {
 			newSAPs[3] = -1;
 		}
 		
-		//disable invalid indices
-		if (minX < 0){
-			newSAPs[0] = -1;
-			newSAPs[2] = -1;
-		}
-		if (minY < 0){
-			newSAPs[0] = -1;
-			newSAPs[1] = -1;
-		}
-		
 		//return if nothing changed compared to last tick
 		if (newSAPs[0] == b.saps[0] && newSAPs[1] == b.saps[1] && newSAPs[2] == b.saps[2] && newSAPs[3] == b.saps[3])
 			return;
@@ -139,81 +130,81 @@ public class SAPGrid {
 	double higherTimingBorder = 0;
 	
 	public void tick() {
-//		Arrays.stream(saps).parallel().forEach(s -> s.update());
-		if (threadCount != TickHelper.helperThreadCount){
-			HelperRunnable.sap = saps;
-			threadCount = TickHelper.helperThreadCount;
-			runnables = new HelperRunnable[threadCount];
-			int elementsLeft = saps.length;
-			for (int i = 0 ; i < threadCount ; i++){
-				runnables[i] = new HelperRunnable();
-				runnables[i].processAmount = Math.max(1, (int)((double)elementsLeft/(threadCount-i)));
-			}
-			higherTimingBorder = 1./threadCount + 1.5/saps.length;
-		}
-		CountDownLatch latch = new CountDownLatch(threadCount);
-		HelperRunnable.latch = latch;
-		
-		double totalTime = 0;
-		for (int i = 0 ; i < threadCount ; i++){
-			long time = runnables[i].runningTime;
-			totalTime += time;
-		}
-		
-		int elementCounter = 0;
-		int size = saps.length;
-		if (totalTime == 0){
-//			Arrays.stream(saps).parallel().forEach(s -> s.update());
-			int elementsLeft = size;
-			for (int i = 0 ; i < threadCount ; i++){
-				HelperRunnable hr = runnables[i];
-				int amount = (int) Math.round((double)elementsLeft/(threadCount-1));
-				hr.processAmount = amount;
-				elementsLeft -= amount;
-				hr.setLoad(elementCounter, (elementCounter += amount));
-				es.execute(hr);
-			}
-		}else {
-			
-			//rebalance lowest and highest
-			int lowestPos = 0;
-			int highestPos = lowestPos;
-			long lowest = runnables[lowestPos].runningTime;
-			long highest = runnables[lowestPos].runningTime;
-			for (int j = lowestPos+1; j < threadCount ; j++){
-				long time = runnables[j].runningTime;
-				if (time < lowest){
-					lowest = time;
-					lowestPos = j;
-				} else if (time > highest && runnables[j].processAmount > 1){
-					highest = time;
-					highestPos = j;
-				}
-			}
-			runnables[lowestPos].processAmount++;
-			runnables[highestPos].processAmount--;
-			
-			for (int i = 0 ; i < threadCount ; i++){
-				HelperRunnable hr = runnables[i];
-				int higherBorder = elementCounter + hr.processAmount;
-				if (i == threadCount-1){
-					higherBorder = size-1;
-				}
-				hr.setLoad(elementCounter, higherBorder);
-				elementCounter = higherBorder;
-//				System.out.println(hr.h-hr.l +" ("+(hr.averageRunningTime/totalTime)+")");
-//				System.out.print(((hr.runningTime/totalTime)+"; ").replace('.', ','));
-				es.execute(hr);
-			}
+		Arrays.stream(saps).parallel().forEach(s -> s.update());
+//		if (threadCount != TickHelper.helperThreadCount){
+//			HelperRunnable.sap = saps;
+//			threadCount = TickHelper.helperThreadCount;
+//			runnables = new HelperRunnable[threadCount];
+//			int elementsLeft = saps.length;
+//			for (int i = 0 ; i < threadCount ; i++){
+//				runnables[i] = new HelperRunnable();
+//				runnables[i].processAmount = Math.max(1, (int)((double)elementsLeft/(threadCount-i)));
+//			}
+//			higherTimingBorder = 1./threadCount + 1.5/saps.length;
+//		}
+//		CountDownLatch latch = new CountDownLatch(threadCount);
+//		HelperRunnable.latch = latch;
+//		
+//		double totalTime = 0;
+//		for (int i = 0 ; i < threadCount ; i++){
+//			long time = runnables[i].runningTime;
+//			totalTime += time;
+//		}
+//		
+//		int elementCounter = 0;
+//		int size = saps.length;
+//		if (totalTime == 0){
+////			Arrays.stream(saps).parallel().forEach(s -> s.update());
+//			int elementsLeft = size;
+//			for (int i = 0 ; i < threadCount ; i++){
+//				HelperRunnable hr = runnables[i];
+//				int amount = (int) Math.round((double)elementsLeft/(threadCount-1));
+//				hr.processAmount = amount;
+//				elementsLeft -= amount;
+//				hr.setLoad(elementCounter, (elementCounter += amount));
+//				es.execute(hr);
+//			}
+//		}else {
+//			
+//			//rebalance lowest and highest
+//			int lowestPos = 0;
+//			int highestPos = lowestPos;
+//			long lowest = runnables[lowestPos].runningTime;
+//			long highest = runnables[lowestPos].runningTime;
+//			for (int j = lowestPos+1; j < threadCount ; j++){
+//				long time = runnables[j].runningTime;
+//				if (time < lowest){
+//					lowest = time;
+//					lowestPos = j;
+//				} else if (time > highest && runnables[j].processAmount > 1){
+//					highest = time;
+//					highestPos = j;
+//				}
+//			}
+//			runnables[lowestPos].processAmount++;
+//			runnables[highestPos].processAmount--;
+//			
+//			for (int i = 0 ; i < threadCount ; i++){
+//				HelperRunnable hr = runnables[i];
+//				int higherBorder = elementCounter + hr.processAmount;
+//				if (i == threadCount-1){
+//					higherBorder = size-1;
+//				}
+//				hr.setLoad(elementCounter, higherBorder);
+//				elementCounter = higherBorder;
+////				System.out.println(hr.h-hr.l +" ("+(hr.averageRunningTime/totalTime)+")");
+////				System.out.print(((hr.runningTime/totalTime)+"; ").replace('.', ','));
+//				es.execute(hr);
+//			}
 //			System.out.println();
 //			System.out.println("---"+higherTimingBorder);
-		}
-		
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		}
+//		
+//		try {
+//			latch.await();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	public int[] findBordersX(){
